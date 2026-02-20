@@ -11,6 +11,7 @@ import VendorModel from '@/Models/vendorModel';
 import Vendor from './(vendor)/components/Vendor';
 import Loading from '@/Components/Loading';
 import GroceryModel from '@/Models/groceryModel';
+import GeoUpdater from '@/GeoUpdater';
 
 const page = async () => {
 
@@ -55,10 +56,12 @@ const page = async () => {
 
   return (
     <>
+
+    <GeoUpdater userId={userdata._id} />
     <Suspense fallback={<Loading />}>
       {renderDashboard()}
     </Suspense>
-
+    
     </>
   )
 }

@@ -1,5 +1,4 @@
 'use client' 
-import React from 'react'
 import useGetuser from './Hooks/useGetuser'
 
 const Inituser = () => {

@@ -5,6 +5,7 @@ import { FaMapMarkerAlt, FaShippingFast, FaShieldAlt, FaStar } from 'react-icons
 import Navbar from '@/Components/Navbar'
 import Categoryslider from './Categoryslider'
 import GroceryItemCard from './Groceryitemcard'
+import { getSocket } from '@/Config/socket'
 
 const User = ({ user, grocery }) => {
 
@@ -79,6 +80,10 @@ const User = ({ user, grocery }) => {
     };
 
     navigator.geolocation.getCurrentPosition(handleSuccess, handleError, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+  }, [])
+
+  useEffect(() => {
+    const socket = getSocket();
   }, [])
 
 

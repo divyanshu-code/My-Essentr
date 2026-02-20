@@ -46,6 +46,14 @@ const userSchema = new mongoose.Schema(
                 type : [Number],
                 default : [0 , 0]         // [ longitutde , latitude ]
             }
+        },
+        isAvailable : {
+            type : Boolean,
+            default : false
+        },
+        socketId : {
+            type : String,
+            default : null
         }
     },
     { timestamps: true }
