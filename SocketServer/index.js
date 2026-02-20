@@ -24,7 +24,20 @@ const io = new Server(server, {
 const userSocketMap = new Map();
 
 io.on("connection", (socket) => {
-    console.log("New connection established. Socket ID:", socket.id);
+
+    socket.on("userId" ,async (userId) => {
+        
+        console.log(`User registered: ${userId} -> Socket: ${socket.id}`);
+
+        await fetch(`${process.env.NEXT_BASE_URL}/api/socket/connect`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId, socketId: socket.id }),
+        });
+
+    })
 
     // 1. ADD USER TO MAP
     // The client should emit this when a user logs in or connects
