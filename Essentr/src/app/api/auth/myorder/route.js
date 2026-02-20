@@ -9,7 +9,9 @@ export async function GET(req) {
 
         const session = await auth();
 
-        const orders = await OrderModel.find({ user: session?.user?.id }).populate("user");      // findOne() will give you only one data therefore use find() for whole data.
+        // findOne() will give you only one data therefore use find() for whole data.
+
+        const orders = await OrderModel.find({ user: session?.user?.id }).populate("user").sort({ createdAt: -1 });      
 
         if (!orders) {
             return NextResponse.json(

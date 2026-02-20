@@ -1,5 +1,6 @@
 import connectDB from '@/Config/Db';
 import OrderModel from '@/Models/orderModel';
+import UserModel from '@/Models/userModel';
 import { NextResponse } from 'next/server';
 
 export async function PUT(request, { params }) {
@@ -26,13 +27,28 @@ export async function PUT(request, { params }) {
             );
         }
 
-        order.status= status 
+        order.status = status
 
-        let getalldelivery = [] ;
+        let getalldelivery = [];
 
-        if(status == "Out for delivery" && !order.assigned){
-               
-            
+        if (status == "Out for delivery" && !order.assigned) {
+            const { latitude, longitude } = order.shippingAddress;
+
+            const nearestDeliveryPartner = await UserModel.find({
+                role: "deliveryboy",
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [Number(longitude), Number(latitude)]
+                        },
+                        $maxDistance: 10000
+                    }
+                }
+            })
+
+            const nearByDeliveryPartner = nearestDeliveryPartner.map((b) => b._id)
+
         }
 
     } catch (error) {

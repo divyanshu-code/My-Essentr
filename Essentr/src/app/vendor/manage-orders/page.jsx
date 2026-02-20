@@ -124,7 +124,7 @@ const ManageOrders = () => {
                                         <th className="px-1 py-5">Total Amount</th>
                                         <th className="px-15 py-5">Status</th>
                                         <th className="px-1 py-5">Payment status</th>
-                                        <th className="px-19 py-5  ">Actions</th>
+                                        <th className="px-19 py-5">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
