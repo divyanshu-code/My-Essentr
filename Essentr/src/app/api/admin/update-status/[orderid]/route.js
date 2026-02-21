@@ -2,13 +2,16 @@ import connectDB from '@/Config/Db';
 import OrderModel from '@/Models/orderModel';
 import UserModel from '@/Models/userModel';
 import { NextResponse } from 'next/server';
+import DeliveryassignModel from '@/Models/deliveryassignModel';
 
-export async function PUT(request, { params }) {
+export async function POST(request, { params }) {
     try {
 
         await connectDB();
 
-        const { orderid } = params;
+        const resolvedParams = await params;
+        const { orderid } = resolvedParams;
+        
         const { status } = await request.json();
 
         if (!orderid || !status) {
@@ -29,7 +32,7 @@ export async function PUT(request, { params }) {
 
         order.status = status
 
-        let getalldelivery = [];
+        let deliverypartner = [];
 
         if (status == "Out for delivery" && !order.assigned) {
             const { latitude, longitude } = order.shippingAddress;
@@ -42,16 +45,64 @@ export async function PUT(request, { params }) {
                             type: "Point",
                             coordinates: [Number(longitude), Number(latitude)]
                         },
-                        $maxDistance: 10000
+                        $maxDistance: 10000   // 10 km 
                     }
                 }
             })
 
-            const nearByDeliveryPartner = nearestDeliveryPartner.map((b) => b._id)
+            const nearByDeliveryPartner = nearestDeliveryPartner.map((b) => b._id.toString())
+            const busyIds = await DeliveryassignModel.find({
+
+                assignCastedTo: { $in: nearByDeliveryPartner },      // it will check nearByDeliveryPartner is assined or not.
+                status: { $nin: ["broadcasted", "completed"] }
+
+            }).distinct("assignCastedTo")
+
+            // whole busyIds is array of delivery partner ids who are busy
+
+            const busyIdSet = new Set(busyIds.map(id => id.toString()))
+            const availableDeliveryPartner = nearByDeliveryPartner.filter((partner) => !busyIdSet.has(partner._id.toString()));
+
+            const candidates = availableDeliveryPartner.map((b) => b._id)
+
+            if (candidates.length === 0) {
+                await order.save();
+                return NextResponse.json(
+                    { error: 'No available delivery partners found' },
+                    { status: 400 }
+                );
+            }
+
+            const deliveryAssign = await DeliveryassignModel.create({
+                currentOrderId: order._id,
+                broadCastedTo: candidates,
+                status: "broadcasted",
+            });
+
+            order.assigned = deliveryAssign._id;
+            deliverypartner = availableDeliveryPartner.map(b => ({
+                id: b._id,
+                name: b.name,
+                mobile: b.mobile,
+                latitude: b.location.coordinates[1],
+                longitude: b.location.coordinates[0],
+            }));
+
+            await deliveryAssign.populate("currentOrderId")
 
         }
 
+        await order.save();
+        await order.populate("user")
+
+        return NextResponse.json({
+            success: true,
+            assign: order.assigned?._id,
+            availablePartners: deliverypartner
+        }, { status: 200 })
+
     } catch (error) {
+        console.log(error);
         return NextResponse.json(
             { error: 'Failed to update order status' },
             { status: 500 }

@@ -6,6 +6,7 @@ import {
     FaSearch, FaFilter, FaArrowLeft
 } from 'react-icons/fa'
 import Link from 'next/link'
+import { toast, Slide } from 'react-toastify';
 
 const ManageOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -18,10 +19,63 @@ const ManageOrders = () => {
         Cancelled: 'text-red-500 bg-red-500/10 border-red-500/20',
     };
 
-    const handleStatusChange = (orderId, newStatus) => {
-        setOrders(prev => prev.map(order =>
-            order._id === orderId ? { ...order, status: newStatus } : order
-        ));
+    const handleStatusChange = async (orderId, newStatus) => {
+
+        try {
+            const response = await fetch(`/api/admin/update-status/${orderId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderid: orderId, status: newStatus })
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+
+                toast.success("Order status updated successfully", {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Slide,
+                });
+            } else {
+
+                toast.error(data.error, {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Slide,
+                });
+            }
+
+            setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+
+        } catch (err) {
+            console.log(err.message);
+
+            toast.error(err.message, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Slide,
+            });
+
+        }
     };
 
     const filteredOrders = orders.filter(order =>
@@ -42,7 +96,7 @@ const ManageOrders = () => {
                 const allorder = await response.json()
 
                 setOrders(allorder)
-              
+
             } catch (error) {
                 console.log(error);
 
@@ -79,7 +133,7 @@ const ManageOrders = () => {
                                     type="text"
                                     placeholder="Search Order ID..."
                                     value={searchTerm}
-                                    onChange={(e)=> setSearchTerm(e.target.value)}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
                                     className="bg-zinc-900 border border-white/5 rounded-md py-2 pl-12 pr-6 text-sm focus:outline-none focus:border-emerald-500/50 transition-all w-64"
                                 />
                             </div>
@@ -94,7 +148,7 @@ const ManageOrders = () => {
                             { label: 'Total Orders', value: orders.length, icon: FaBox, color: 'text-blue-500' },
                             { label: 'Pending', value: orders.filter(o => o.status === 'Pending').length, icon: FaClock, color: 'text-amber-500' },
                             { label: 'Processing', value: orders.filter(o => o.status === 'Out for delivery').length, icon: FaTruck, color: 'text-purple-500' },
-                            { label: 'Completed', value: (orders.status==='Delivered').length || 0, icon: FaCheckCircle, color: 'text-emerald-500' },
+                            { label: 'Completed', value: (orders.status === 'Delivered').length || 0, icon: FaCheckCircle, color: 'text-emerald-500' },
                         ].map((stat, i) => (
                             <motion.div
                                 key={i}

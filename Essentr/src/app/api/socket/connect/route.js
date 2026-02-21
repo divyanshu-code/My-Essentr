@@ -12,7 +12,7 @@ export async function POST(request) {
             {
                 socketId,
                 isAvailable: true,
-            }, { new: true });
+            }, { returnDocument: 'after' });
 
         if (!updatedUser) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });

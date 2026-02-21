@@ -14,7 +14,7 @@ export async function POST(req) {
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
       { location },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!updatedUser) {
