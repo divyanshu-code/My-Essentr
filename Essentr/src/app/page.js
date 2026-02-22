@@ -48,7 +48,7 @@ const page = async () => {
       case 'customer':
         return <User user={userdata} grocery={grocerydata} />;
       case 'delivery':
-        return <Delivery />;
+        return <Delivery user={userdata}/>
       default:
         return null;
     }

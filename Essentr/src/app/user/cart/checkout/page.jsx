@@ -237,7 +237,6 @@ const CheckoutPage = () => {
               transition: Slide,
             });
 
-
           }
         },
 

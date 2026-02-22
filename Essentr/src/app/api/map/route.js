@@ -25,7 +25,7 @@ export async function GET(request) {
     const response = await axios.get(url,
       {
         headers: {                                                                  
-          'User-Agent': 'divyanshubisht5734@gmail.com'                          //  Nominatim requires a User-Agent (use your app name or email)
+          'User-Agent': 'divyanshubisht5734@gmail.com'               //  Nominatim requires a User-Agent (use your app name or email)
         }
       }
     );

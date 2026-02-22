@@ -6,8 +6,6 @@ import { FaShieldAlt } from "react-icons/fa";
 import Navbar from '@/Components/Navbar';
 import { FaMapMarkerAlt } from 'react-icons/fa'
 import Link from 'next/link';
-import { getSocket } from '@/Config/socket';
-import { useEffect } from 'react';
 
 const Vendor = ({ user, vendor }) => {
 

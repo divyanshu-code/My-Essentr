@@ -20,7 +20,6 @@ const Navbar = ({ user }) => {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
   const dropdownRef = useRef(null);
 
   const showNotifications = user && ['vendor', 'delivery'].includes(user.role);
@@ -132,20 +131,7 @@ const Navbar = ({ user }) => {
           </div>
 
           <div className="flex items-center gap-6 min-w-37.5 justify-end">
-
-            {user.role === 'delivery' && (
-              <div
-                onClick={() => setIsOnline(!isOnline)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full cursor-pointer transition-all ${isOnline ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}
-              >
-                <div className={`w-2 h-2 rounded-full animate-pulse ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                  {isOnline ? 'Online' : 'Offline'}
-                </span>
-              </div>
-            )}
-
+            
             {showNotifications && (
               <motion.div whileHover={{ scale: 1.1 }} className="relative cursor-pointer text-gray-500 hover:text-green-600 transition-colors">
                 <FaBell size={22} />

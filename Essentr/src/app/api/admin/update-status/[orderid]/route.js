@@ -11,7 +11,7 @@ export async function POST(request, { params }) {
 
         const resolvedParams = await params;
         const { orderid } = resolvedParams;
-        
+
         const { status } = await request.json();
 
         if (!orderid || !status) {
@@ -38,7 +38,7 @@ export async function POST(request, { params }) {
             const { latitude, longitude } = order.shippingAddress;
 
             const nearestDeliveryPartner = await UserModel.find({
-                role: "deliveryboy",
+                role: "delivery",
                 location: {
                     $near: {
                         $geometry: {
@@ -61,9 +61,12 @@ export async function POST(request, { params }) {
             // whole busyIds is array of delivery partner ids who are busy
 
             const busyIdSet = new Set(busyIds.map(id => id.toString()))
-            const availableDeliveryPartner = nearByDeliveryPartner.filter((partner) => !busyIdSet.has(partner._id.toString()));
 
-            const candidates = availableDeliveryPartner.map((b) => b._id)
+            const availableDeliveryPartnerObjects = nearestDeliveryPartner.filter((partner) =>
+                !busyIdSet.has(partner._id.toString())
+            );
+
+            const candidates = availableDeliveryPartnerObjects.map((b) => b._id)
 
             if (candidates.length === 0) {
                 await order.save();
@@ -80,7 +83,8 @@ export async function POST(request, { params }) {
             });
 
             order.assigned = deliveryAssign._id;
-            deliverypartner = availableDeliveryPartner.map(b => ({
+
+            deliverypartner = availableDeliveryPartnerObjects.map(b => ({
                 id: b._id,
                 name: b.name,
                 mobile: b.mobile,
@@ -89,7 +93,6 @@ export async function POST(request, { params }) {
             }));
 
             await deliveryAssign.populate("currentOrderId")
-
         }
 
         await order.save();
