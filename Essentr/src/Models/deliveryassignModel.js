@@ -8,6 +8,12 @@ const deliveryBoySchema = new mongoose.Schema({
         default: null
     },
 
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+
     broadCastedTo: [
         {
             type: mongoose.Schema.Types.ObjectId,

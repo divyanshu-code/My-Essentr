@@ -19,7 +19,7 @@ const page = async () => {
 
   const session = await auth();                               // get the session of the logged in user 
 
-  const user = await UserModel.findById(session?.user?.id)
+  const user = await UserModel.findById(session?.user?.id).select("-password")
 
   const vendor = await VendorModel.findOne({ userId: session?.user?.id });
 

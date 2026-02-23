@@ -4,8 +4,6 @@ import { getSocket } from './Config/socket'
 
 const GeoUpdater = ({ userId }) => {
 
-    let socket = getSocket();
-
     useEffect(() => {
 
         if (!userId) return

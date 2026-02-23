@@ -27,7 +27,7 @@ export async function proxy(req){
 
     // role based access control
 
-    if(pathname.startsWith('/vendor') && role !== 'vendor'){
+    if(pathname.startsWith('/admin') && role !== 'vendor'){
         const url = new URL("/unauthorized", req.url);
         return NextResponse.redirect(url);
     }
@@ -37,7 +37,7 @@ export async function proxy(req){
         return NextResponse.redirect(url);
     }
 
-    if(pathname.startsWith('/customer') && role !== 'customer'){
+    if(pathname.startsWith('/user') && role !== 'user'){
         const url = new URL("/unauthorized", req.url);
         return NextResponse.redirect(url);
     }

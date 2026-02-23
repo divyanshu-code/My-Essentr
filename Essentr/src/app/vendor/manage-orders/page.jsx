@@ -43,6 +43,9 @@ const ManageOrders = () => {
                     theme: "colored",
                     transition: Slide,
                 });
+                
+                setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+
             } else {
 
                 toast.error(data.error, {
@@ -57,8 +60,6 @@ const ManageOrders = () => {
                     transition: Slide,
                 });
             }
-
-            setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
 
         } catch (err) {
             console.log(err.message);

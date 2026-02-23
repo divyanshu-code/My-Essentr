@@ -23,6 +23,8 @@ export async function POST(request, { params }) {
 
         const order = await OrderModel.findById(orderid).populate("user")
 
+        console.log("order" , order);
+        
         if (!order) {
             return NextResponse.json(
                 { error: 'Order not found' },
@@ -80,6 +82,7 @@ export async function POST(request, { params }) {
                 currentOrderId: order._id,
                 broadCastedTo: candidates,
                 status: "broadcasted",
+                vendorId: order.vendor?._id || order?.vendor,
             });
 
             order.assigned = deliveryAssign._id;
@@ -97,6 +100,7 @@ export async function POST(request, { params }) {
 
         await order.save();
         await order.populate("user")
+        await order.populate("vendor")
 
         return NextResponse.json({
             success: true,
