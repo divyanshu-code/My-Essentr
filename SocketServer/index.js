@@ -9,6 +9,8 @@ dotenv.config();
 const app = express();
 app.use(cors());
 
+app.use(express.json());
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -22,6 +24,11 @@ const io = new Server(server, {
 // to send request or info io.emit 
 
 io.on("connection", (socket) => {
+
+    socket.on("joinVendorRoom", (vendorId) => {
+        socket.join(vendorId); 
+        console.log(`Vendor ${vendorId} joined their private room.`);
+    });
 
     socket.on("userId", async (userId) => {
 
@@ -57,6 +64,27 @@ io.on("connection", (socket) => {
         console.log("User disconnected. Socket ID:", socket.id);
     });
 });
+
+app.post("/notify" , (req , res)=>{
+
+   const { event, data } = req.body;
+   
+   if (data && data.vendor) {
+        io.to(data.vendor).emit(event, data);
+    } else if (Array.isArray(data) && data[0].vendor) {
+
+        data.forEach(order => {
+            io.to(order.vendor).emit(event, order);
+        });
+
+    } else {
+
+        io.emit(event, data);
+
+    }
+    
+    return res.status(200).json({ success: true });
+})
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

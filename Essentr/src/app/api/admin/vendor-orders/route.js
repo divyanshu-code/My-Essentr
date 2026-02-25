@@ -16,7 +16,7 @@ export async function GET(req) {
     const vendorId = session.user.id;    
 
     const orders = await OrderModel.find({
-      vendor:  vendorId 
+      vendor: vendorId 
     })
     .sort({ createdAt: -1 }) 
     .populate('user'); 

@@ -37,7 +37,7 @@ export async function proxy(req){
         return NextResponse.redirect(url);
     }
 
-    if(pathname.startsWith('/user') && role !== 'user'){
+    if(pathname.startsWith('/user') && role !== 'customer'){
         const url = new URL("/unauthorized", req.url);
         return NextResponse.redirect(url);
     }

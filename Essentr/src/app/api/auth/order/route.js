@@ -1,4 +1,5 @@
 import connectDB from '@/Config/Db';
+import Emiteventhandler from '@/Config/Emiteventhandler';
 import OrderModel from '@/Models/orderModel';
 import UserModel from '@/Models/userModel';
 import { NextResponse } from 'next/server';
@@ -22,7 +23,7 @@ export async function POST(request) {
         }
 
         const ordersByVendor = items.reduce((acc, item) => {
-            const vendorId = item.vendor; 
+            const vendorId = item.vendor;
             if (!vendorId) {
                 throw new Error(`Item ${item.name} is missing a vendor ID`);
             }
@@ -35,25 +36,29 @@ export async function POST(request) {
 
         const orderPromises = Object.keys(ordersByVendor).map(async (vendorId) => {
             const vendorItems = ordersByVendor[vendorId];
-    
+
             const vendorTotal = vendorItems.reduce((sum, item) => {
                 return sum + (Number(item.price) * item.quantity);
             }, 0);
 
             return await OrderModel.create({
                 user: userId,
-                vendor: vendorId,  
+                vendor: vendorId,
                 items: vendorItems,
-                totalamount: vendorTotal, 
+                totalamount: vendorTotal,
                 paymentMethod,
                 shippingAddress,
                 changeOption,
                 change,
-                isPaid 
+                isPaid
             });
         });
 
         const createdOrders = await Promise.all(orderPromises);
+
+        createdOrders.forEach(async (order) => {
+            await Emiteventhandler("newOrder", order);
+        });
 
         return NextResponse.json({ success: true, createdOrders }, { status: 200 });
 

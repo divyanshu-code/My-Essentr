@@ -10,7 +10,7 @@ import {
   Package,
   ChevronRight,
   Star,
-  TrendingUp
+  ChevronLeft,
 } from 'lucide-react';
 import Navbar from '@/Components/Navbar';
 import axios from 'axios';
@@ -21,8 +21,6 @@ const Deliverydashboard = ({ user }) => {
   const [isOnDuty, setIsOnDuty] = useState(false);
   const [address, setAddress] = useState("Detecting location...");
   const [assignments, setAssignments] = useState();
-
-  console.log(assignments);
   
   useEffect(() => {
 
@@ -89,6 +87,8 @@ const Deliverydashboard = ({ user }) => {
         }
 
         const data = await res.json();
+
+        console.log(data)
         setAssignments(data);     
 
       } catch (error) {
@@ -162,20 +162,6 @@ const Deliverydashboard = ({ user }) => {
           </motion.div>
         </div>
 
-        <div className="px-6 grid grid-cols-2 gap-4 mt-2">
-          <div className="bg-white p-5 rounded-3xl border border-slate-100">
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Today's Pay</p>
-            <h4 className="text-xl font-black text-slate-800">₹1,240</h4>
-            <div className="mt-2 flex items-center gap-1 text-green-500 text-[10px] font-bold">
-              <TrendingUp size={10} /> +12% vs yest.
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-3xl border border-slate-100">
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Trips Done</p>
-            <h4 className="text-xl font-black text-slate-800">14</h4>
-          </div>
-        </div>
-
         <div className="px-6 mt-8 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-bold text-slate-800">Available Near You</h3>
@@ -204,7 +190,10 @@ const Deliverydashboard = ({ user }) => {
                       <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
                         <Package size={16} />
                       </div>
-                      <span className="text-xs font-black text-slate-800"> {assignments?.totalamount}</span>
+                      <div className='flex  flex-col'>
+                        <span className="text-xs font-black text-slate-900"> Order Amount: ₹ {assignments?.[0]?.currentOrderId?.totalamount} </span>
+                        <span className="text-xs font-medium text-slate-500"> Payment Status : {assignments?.[0]?.currentOrderId?.isPaid ? "Paid" : "Not Paid"} </span>
+                      </div>
                     </div>
                     <span className="text-[10px] font-bold text-slate-400">2.5 KM</span>
                   </div>
@@ -212,17 +201,21 @@ const Deliverydashboard = ({ user }) => {
                   <div className="flex gap-4 mb-6">
                     <div className="flex flex-col items-center gap-1 mt-1">
                       <div className="w-2 h-2 rounded-full bg-slate-300" />
-                      <div className="w-[1px] h-6 bg-slate-200" />
+                      <div className="w-[1px] h-4 bg-slate-200" />
                       <div className="w-2 h-2 rounded-full bg-orange-500" />
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-slate-500">Pickup: Fresh Mart, Sector 2</p>
-                      <p className="text-xs font-bold text-slate-800">Drop: Malviya Nagar, Lane 4</p>
+                    <div className="space-y-3.5">
+                      <p className="text-xs font-medium text-slate-500">Pickup: {assignments?.[0]?.currentOrderId?.vendor?.address}</p>
+                      <p className="text-xs font-bold text-slate-800">Drop: {assignments?.[0]?.currentOrderId?.shippingAddress
+?.address}</p>
                     </div>
                   </div>
 
-                  <button className="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                  <button className="w-full bg-orange-500 text-white py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
                     Swipe to Accept <ChevronRight size={18} />
+                  </button>
+                  <button className="w-full bg-red-500 text-white py-2.5 mt-3 rounded-lg pl-135 font-bold flex items-center gap-2 active:scale-95 transition-transform">
+                   <ChevronLeft size={18} />  Swipe to Reject 
                   </button>
                 </div>
               </motion.div>

@@ -7,10 +7,14 @@ import {
 } from 'react-icons/fa'
 import Link from 'next/link'
 import { toast, Slide } from 'react-toastify';
+import { getSocket } from '@/Config/socket'
+import { useSelector } from 'react-redux'
 
 const ManageOrders = () => {
     const [orders, setOrders] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+
+    const userdata = useSelector((state) => state.user.userData);
 
     const statusColors = {
         Pending: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
@@ -43,7 +47,7 @@ const ManageOrders = () => {
                     theme: "colored",
                     transition: Slide,
                 });
-                
+
                 setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
 
             } else {
@@ -79,9 +83,9 @@ const ManageOrders = () => {
         }
     };
 
-    const filteredOrders = orders.filter(order =>
-        order._id.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOrders = Array.isArray(orders) ? orders.filter(order =>
+        order?._id?.toString()?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) : [];
 
     useEffect(() => {
 
@@ -105,6 +109,26 @@ const ManageOrders = () => {
         }
 
         getvendororders();
+    }, [])
+
+    useEffect(() => {
+
+        const socket = getSocket()
+
+        const currentVendorId = userdata?._id;
+
+        if (currentVendorId) {
+            socket.emit("joinVendorRoom", currentVendorId);
+        }
+
+        socket?.on("newOrder", (data) => {
+
+            setOrders((prev) => [data, ...prev]);
+        })
+
+        return () => {
+            socket.off("newOrder");
+        }
     }, [])
 
 
@@ -146,10 +170,10 @@ const ManageOrders = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                         {[
-                            { label: 'Total Orders', value: orders.length, icon: FaBox, color: 'text-blue-500' },
-                            { label: 'Pending', value: orders.filter(o => o.status === 'Pending').length, icon: FaClock, color: 'text-amber-500' },
-                            { label: 'Processing', value: orders.filter(o => o.status === 'Out for delivery').length, icon: FaTruck, color: 'text-purple-500' },
-                            { label: 'Completed', value: (orders.status === 'Delivered').length || 0, icon: FaCheckCircle, color: 'text-emerald-500' },
+                            { label: 'Total Orders', value: orders?.length || 0, icon: FaBox, color: 'text-blue-500' },
+                            { label: 'Pending', value: orders?.filter(o => o.status === 'Pending').length || 0, icon: FaClock, color: 'text-amber-500' },
+                            { label: 'Processing', value: orders?.filter(o => o.status === 'Out for delivery').length || 0, icon: FaTruck, color: 'text-purple-500' },
+                            { label: 'Completed', value: orders?.filter(o => o.status === 'Delivered').length || 0, icon: FaCheckCircle, color: 'text-emerald-500' },
                         ].map((stat, i) => (
                             <motion.div
                                 key={i}
