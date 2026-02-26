@@ -31,16 +31,16 @@ export async function POST(request, { params }) {
             );
         }
 
-        
+
         let deliverypartner = [];
-        
+
         if (status == "Out for delivery" && !order.assigned) {
-            
+
             const existingAssignment = await DeliveryassignModel.findOne({ currentOrderId: orderid });
             if (existingAssignment) {
                 return NextResponse.json({ message: "Assignment already exists" }, { status: 200 });
             }
-            
+
             const { latitude, longitude } = order.shippingAddress;
 
             const nearestDeliveryPartner = await UserModel.find({
@@ -58,26 +58,26 @@ export async function POST(request, { params }) {
 
             const nearByDeliveryPartner = nearestDeliveryPartner.map((b) => b._id.toString())
             const busyIds = await DeliveryassignModel.find({
-                
+
                 assignCastedTo: { $in: nearByDeliveryPartner },      // it will check nearByDeliveryPartner is assined or not.
                 status: { $nin: ["broadcasted", "completed"] }
-                
+
             }).distinct("assignCastedTo")
-            
+
             // whole busyIds is array of delivery partner ids who are busy
-            
+
             const busyIdSet = new Set(busyIds.map(id => id.toString()))
 
             const availableDeliveryPartnerObjects = nearestDeliveryPartner.filter((partner) =>
                 !busyIdSet.has(partner._id.toString())
-        );
-        
-        const candidates = availableDeliveryPartnerObjects.map((b) => b._id)
-        
-        if (candidates.length === 0) {
-            await order.save();
-            
-            return NextResponse.json(
+            );
+
+            const candidates = availableDeliveryPartnerObjects.map((b) => b._id)
+
+            if (candidates.length === 0) {
+                await order.save();
+
+                return NextResponse.json(
                     { error: 'No available delivery partners found' },
                     { status: 400 }
                 );
@@ -89,11 +89,22 @@ export async function POST(request, { params }) {
                 status: "broadcasted",
                 vendorId: order.vendor?._id || order?.vendor,
             });
-            
+
             order.status = status
             order.assigned = deliveryAssign._id;
 
-            await deliveryAssign.populate("currentOrderId");
+            await deliveryAssign.populate({
+                path: 'currentOrderId',
+                populate: {
+                    path: 'vendor',    // Order model mein jo vendor field hai (User ID)
+                    model: 'Vendor',   // Force Mongoose to look into Vendor collection
+                    foreignField: 'userId', // Vendor collection mein 'userId' field se match karo
+                    localField: 'vendor'
+                }
+            });
+
+            await deliveryAssign.populate('vendorId');
+
             for (const boyId of candidates) {
                 const boy = await UserModel.findById(boyId)
                 if (boy?.socketId) {
@@ -109,8 +120,8 @@ export async function POST(request, { params }) {
                 latitude: b.location.coordinates[1],
                 longitude: b.location.coordinates[0],
             }));
-        }{
-            
+        } {
+
             order.status = status;
         }
 

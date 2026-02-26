@@ -84,8 +84,6 @@ const Deliverydashboard = ({ user }) => {
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
 
-        console.log(data);
-
         setAssignments(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Fetch error:", error);
@@ -99,7 +97,16 @@ const Deliverydashboard = ({ user }) => {
     const socket = getSocket();
     socket.on("new-assignments", (deliveryAssign) => {
 
-      setAssignments((prev) => [...prev, deliveryAssign]);
+      setAssignments((prev) => {
+
+        const isDuplicate = prev.some(item => item._id === deliveryAssign._id);
+
+        if (isDuplicate) {
+          return prev;
+        }
+
+        return [...prev, deliveryAssign];
+      });
     });
 
     return () => {
@@ -208,7 +215,7 @@ const Deliverydashboard = ({ user }) => {
                         <div className="w-2 h-2 rounded-full bg-orange-500" />
                       </div>
                       <div className="space-y-3.5">
-                        <p className="text-xs font-medium text-slate-500">Pickup: {order.currentOrderId?.vendor?.address}</p>
+                        <p className="text-xs font-medium text-slate-500">Pickup: {order.currentOrderId?.vendor?.address || "Loading address..."}</p>
                         <p className="text-xs font-bold text-slate-800">Drop: {order.currentOrderId?.shippingAddress?.address}</p>
                       </div>
                     </div>
