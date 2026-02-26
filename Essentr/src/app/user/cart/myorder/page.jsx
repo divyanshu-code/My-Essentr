@@ -6,6 +6,7 @@ import { TbLoader3 } from "react-icons/tb";
 import { MdLocationOn } from "react-icons/md";
 import Link from 'next/link'
 import Image from 'next/image';
+import { getSocket } from '@/Config/socket';
 
 const MyOrders = () => {
 
@@ -49,6 +50,27 @@ const MyOrders = () => {
         }
 
         getmyorders();
+    }, [])
+
+    useEffect(() => {
+
+        const socket = getSocket()
+
+        socket.on("order_status_updated", (data) => {
+
+            setorderdata((prevOrders) =>
+                prevOrders.map((order) =>
+                    order._id.toString() === data.orderId.toString()
+                        ? { ...order, status: data.status }             // Sirf match hone wala order update hoga
+                        : order
+                )
+            );
+        })
+
+        return () => {
+            socket.off("order_status_updated")
+        }
+
     }, [])
 
     if (loading) {
@@ -116,16 +138,16 @@ const MyOrders = () => {
                                                     }`}>{order.isPaid ? "Paid" : "Unpaid"}
                                                 </div>
                                                 <div>
-                                                <StatusBadge status={order.status} />
+                                                    <StatusBadge status={order.status} />
                                                 </div>
                                             </div>
-                                            
+
                                         </div>
                                     </div>
 
                                     <div className='mt-10 flex items-center justify-between'>
-                                        <div className='flex items-center gap-1'>
-                                            <MdLocationOn size={15} />
+                                        <div className='flex items-center justify-center gap-1'>
+                                            <MdLocationOn size={13} />
                                             <p className="text-zinc-400 text-sm font-medium">{order?.shippingAddress?.address}</p>
                                         </div>
 
@@ -137,9 +159,9 @@ const MyOrders = () => {
                                         <div className="flex items-center justify-between gap-3">
                                             {expanded != order._id && (
 
-                                            <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center border border-white/5">
-                                                <FaBox className="text-zinc-500 text-sm" />
-                                            </div>
+                                                <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center border border-white/5">
+                                                    <FaBox className="text-zinc-500 text-sm" />
+                                                </div>
                                             )}
                                             <div className="text-zinc-400 text-sm font-medium">
                                                 <button
@@ -163,11 +185,11 @@ const MyOrders = () => {
                                                 >
                                                     <div className='mt-3 space-y-3'>
                                                         {order.items.map((item, index) => (
-                                                            
+
                                                             <div
                                                                 key={index}
-                                                                className='flex justify-between items-center w-200 bg-gray-50 rounded-lg px-3 py-2'>   
-                                                                                                                   
+                                                                className='flex justify-between items-center w-200 bg-gray-50 rounded-lg px-3 py-2'>
+
                                                                 <div className='flex items-center gap-5'>
                                                                     <Image
                                                                         src={item.image}
@@ -180,8 +202,8 @@ const MyOrders = () => {
                                                                         <p className='text-xs font-medium text-zinc-700'>{item.name}</p>
                                                                         <p className='text-xs text-zinc-700'> {item.quantity} x {item.unit}{item.unit1}</p>
                                                                     </div>
-                                                                </div>  
-                                                                
+                                                                </div>
+
                                                                 <p className='text-xs font-bold text-zinc-700'>₹ {Number(item.price)}</p>
                                                             </div>
                                                         ))}
@@ -230,7 +252,6 @@ const StatusBadge = ({ status }) => {
 
     return (
         <div className={` text-[10px] font-black uppercase  ${color(status)}`}>
-           
             {status}
         </div>
     )

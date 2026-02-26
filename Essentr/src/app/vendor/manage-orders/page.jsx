@@ -172,7 +172,7 @@ const ManageOrders = () => {
                         {[
                             { label: 'Total Orders', value: orders?.length || 0, icon: FaBox, color: 'text-blue-500' },
                             { label: 'Pending', value: orders?.filter(o => o.status === 'Pending').length || 0, icon: FaClock, color: 'text-amber-500' },
-                            { label: 'Processing', value: orders?.filter(o => o.status === 'Out for delivery').length || 0, icon: FaTruck, color: 'text-purple-500' },
+                            { label: 'Processing', value: orders?.filter(o => o.status === 'Out for delivery').length || 0, icon: FaTruck, color: 'text-purple-400' },
                             { label: 'Completed', value: orders?.filter(o => o.status === 'Delivered').length || 0, icon: FaCheckCircle, color: 'text-emerald-500' },
                         ].map((stat, i) => (
                             <motion.div
@@ -182,7 +182,7 @@ const ManageOrders = () => {
                                 transition={{ delay: i * 0.1 }}
                                 className="bg-zinc-900/50 border border-white/5 p-6 rounded-lg relative overflow-hidden group"
                             >
-                                <stat.icon className={`absolute -right-3 -bottom-5 text-7xl opacity-5 group-hover:scale-110 transition-transform duration-500 ${stat.color}`} />
+                                <stat.icon className={`absolute -right-3 -bottom-4 text-7xl opacity-5 group-hover:scale-110 transition-transform duration-500 ${stat.color}`} />
                                 <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">{stat.label}</p>
                                 <h3 className="text-2xl font-black">{stat.value}</h3>
                             </motion.div>
@@ -198,7 +198,7 @@ const ManageOrders = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead className="sticky top-0 z-10 bg-[#0F0F10]">
                                     <tr className="text-zinc-500 text-[10px] font-black border-b border-white/8 uppercase tracking-[0.2em]">
-                                        <th className="px-8 py-5">Order Info</th>
+                                        <th className="px-5 py-5">Order Info</th>
                                         <th className="px-5 py-5">Customer</th>
                                         <th className="px-1 py-5">Total Amount</th>
                                         <th className="px-15 py-5">Status</th>
@@ -217,7 +217,7 @@ const ManageOrders = () => {
                                                 exit={{ opacity: 0, scale: 0.98 }}
                                                 className="group hover:bg-white/2 transition-colors"
                                             >
-                                                <td className="px-8 py-5 flex flex-col">
+                                                <td className="px-5 py-5 w-130 flex flex-col">
                                                     <div className="font-black text-white"># {order?._id?.toString()?.slice(-6)}</div>
                                                     <div className="text-zinc-500 text-[10px] font-bold  uppercase">{new Date(order.createdAt).toLocaleString()}</div>
                                                     <div className="text-zinc-400 text-[10px] font-bold mt-5 uppercase ">{order.shippingAddress?.mobile}</div>

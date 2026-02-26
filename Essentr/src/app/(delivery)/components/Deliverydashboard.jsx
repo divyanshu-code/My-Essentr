@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaMapMarkerAlt } from 'react-icons/fa'
+import { FaMapMarkerAlt } from 'react-icons/fa';
 import {
   Power,
   Zap,
@@ -14,32 +14,27 @@ import {
 } from 'lucide-react';
 import Navbar from '@/Components/Navbar';
 import axios from 'axios';
+import { getSocket } from '@/Config/socket';
 
 const Deliverydashboard = ({ user }) => {
-
   const [error, setError] = useState(null);
   const [isOnDuty, setIsOnDuty] = useState(false);
   const [address, setAddress] = useState("Detecting location...");
-  const [assignments, setAssignments] = useState();
-  
-  useEffect(() => {
 
+  const [assignments, setAssignments] = useState([]);
+
+  useEffect(() => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser");
       return;
     }
 
     const handleSuccess = async (pos) => {
-
       const { latitude, longitude } = pos.coords;
-
       try {
-        
         const res = await axios.get(`/api/map?lat=${latitude}&lon=${longitude}`);
-        const data = await res.data;
-
-        const locationName = data.display_name || data.address.city_district || "Unknown Location";
-        
+        const data = res.data;
+        const locationName = data.display_name || data.address?.city_district || "Unknown Location";
         setAddress(locationName);
       } catch (err) {
         setAddress("Location found");
@@ -47,59 +42,80 @@ const Deliverydashboard = ({ user }) => {
     };
 
     const handleError = (err) => {
-
       switch (err.code) {
+
         case err.PERMISSION_DENIED:
+
           setError("User denied the request for Geolocation.");
+
           break;
+
         case err.POSITION_UNAVAILABLE:
+
           setError("Location information is unavailable.");
+
           break;
+
         case err.TIMEOUT:
+
           setError("The request to get user location timed out.");
+
           break;
+
         default:
+
           setError("An unknown error occurred.");
+
           break;
+
       }
     };
 
-    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
-  }, [])
-
-  const childVars = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
-  }
+    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+      enableHighAccuracy: true,
+      timeout: 10000
+    });
+  }, []);
 
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const res = await fetch('/api/delivery/getassignment' , {
-          method : "GET",
-          headers : {
-            "Content-Type" : "application/json",
-          }
-        });
-
-        if(!res.ok){
-          throw new Error("Failed to fetch assignments");
-        }
-
+        const res = await fetch('/api/delivery/getassignment');
+        if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
 
-        console.log(data)
-        setAssignments(data);     
+        console.log(data);
 
+        setAssignments(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.log(error);
+        console.error("Fetch error:", error);
       }
     };
     fetchAssignments();
-  }, [])
+  }, []);
+
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on("new-assignments", (deliveryAssign) => {
+
+      setAssignments((prev) => [...prev, deliveryAssign]);
+    });
+
+    return () => {
+      socket.off("new-assignments");
+    };
+  }, []);
+
+  const childVars = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+  };
 
   if (error) {
+
     return (
+
       <div className="text-sm font-medium text-center mt-10">
         <span className="text-red-500">📍 {error}</span>
       </div>
@@ -109,16 +125,19 @@ const Deliverydashboard = ({ user }) => {
   return (
     <>
       <Navbar user={user} />
-
       <div className="min-h-screen px-24 pt-15 bg-[#FAF9F6]">
-        <motion.div variants={childVars} className="flex mt-5 ml-8 items-center gap-1 w-fit bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100">
+
+        <motion.div variants={childVars} initial="initial" animate="animate" className="flex mt-5 ml-8 items-center gap-1 w-fit bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100">
           <FaMapMarkerAlt size={11} className="text-green-600" />
-          <span className="text-[9.5px] font-bold text-gray-600 tracking-tight">Delivering to <span className="text-black">{address}</span></span>
+          <span className="text-[9.5px] font-bold text-gray-600 tracking-tight">
+            Delivering to <span className="text-black">{address}</span>
+          </span>
         </motion.div>
+
         <div className="px-8 pt-14 pb-4 flex justify-between items-center ">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded bg-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-              {user?.name.charAt(0).toUpperCase()}
+              {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div>
               <h2 className="text-md font-bold text-slate-800">{user?.name}</h2>
@@ -128,33 +147,21 @@ const Deliverydashboard = ({ user }) => {
               </div>
             </div>
           </div>
-          <motion.div
-            whileTap={{ scale: 0.95 }}
-            className="bg-slate-100 p-2 rounded-xl text-slate-400"
-          >
-            <Zap size={20} />
-          </motion.div>
         </div>
 
         <div className="px-6 py-4">
           <motion.div
             animate={{ backgroundColor: isOnDuty ? '#22C55E' : '#FFFFFF' }}
-            className={`p-6 rounded-3xl shadow-lg shadow-slate-100 border-2 transition-colors ${isOnDuty ? 'border-transparent text-white' : 'border-slate-100 text-slate-800'
-              }`}
+            className={`p-6 rounded-3xl shadow-lg border-2 ${isOnDuty ? 'border-transparent text-white' : 'border-slate-100 text-slate-800'}`}
           >
             <div className="flex justify-between items-center">
               <div>
-                <p className={`text-xs font-semibold uppercase tracking-widest ${isOnDuty ? 'text-green-100' : 'text-slate-400'}`}>
-                  Current Status
-                </p>
-                <h3 className="text-xl font-black mt-1">
-                  {isOnDuty ? 'YOU ARE ONLINE' : 'YOU ARE OFFLINE'}
-                </h3>
+                <p className={`text-xs font-semibold uppercase tracking-widest ${isOnDuty ? 'text-green-100' : 'text-slate-400'}`}>Current Status</p>
+                <h3 className="text-xl font-black mt-1">{isOnDuty ? 'YOU ARE ONLINE' : 'YOU ARE OFFLINE'}</h3>
               </div>
               <button
                 onClick={() => setIsOnDuty(!isOnDuty)}
-                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all ${isOnDuty ? 'bg-white text-green-600' : 'bg-slate-900 text-white'
-                  }`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all ${isOnDuty ? 'bg-white text-green-600' : 'bg-slate-900 text-white'}`}
               >
                 <Power size={25} />
               </button>
@@ -165,59 +172,59 @@ const Deliverydashboard = ({ user }) => {
         <div className="px-6 mt-8 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-bold text-slate-800">Available Near You</h3>
-            <span className="text-xs font-bold text-orange-500 px-3 py-1 bg-orange-50 rounded-full">{assignments?.length} Orders</span>
+            <span className="text-xs font-bold text-orange-500 px-3 py-1 bg-orange-50 rounded-full">
+              {assignments.length} Orders
+            </span>
           </div>
 
           <AnimatePresence>
             {!isOnDuty ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-10 text-center"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-10 text-center">
                 <Map className="mx-auto text-slate-200 mb-2" size={40} />
-                <p className="text-slate-400 text-sm font-medium">Switch Online to see incoming orders in your area</p>
+                <p className="text-slate-400 text-sm font-medium">Switch Online to see incoming orders</p>
               </motion.div>
             ) : (
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="space-y-4 pb-20"
-              >
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-                        <Package size={16} />
-                      </div>
-                      <div className='flex  flex-col'>
-                        <span className="text-xs font-black text-slate-900"> Order Amount: ₹ {assignments?.[0]?.currentOrderId?.totalamount} </span>
-                        <span className="text-xs font-medium text-slate-500"> Payment Status : {assignments?.[0]?.currentOrderId?.isPaid ? "Paid" : "Not Paid"} </span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-400">2.5 KM</span>
-                  </div>
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-4 pb-20">
 
-                  <div className="flex gap-4 mb-6">
-                    <div className="flex flex-col items-center gap-1 mt-1">
-                      <div className="w-2 h-2 rounded-full bg-slate-300" />
-                      <div className="w-[1px] h-4 bg-slate-200" />
-                      <div className="w-2 h-2 rounded-full bg-orange-500" />
+                {assignments.length > 0 ? assignments.map((order, index) => (
+                  <div key={order._id || index} className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mb-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                          <Package size={16} />
+                        </div>
+                        <div className='flex flex-col'>
+                          <span className="text-xs font-black text-slate-900">Amount: ₹{order.currentOrderId?.totalamount}</span>
+                          <span className="text-xs font-medium text-slate-500">Payment: {order.currentOrderId?.isPaid ? "Paid" : "Pending"}</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400">2.5 KM</span>
                     </div>
-                    <div className="space-y-3.5">
-                      <p className="text-xs font-medium text-slate-500">Pickup: {assignments?.[0]?.currentOrderId?.vendor?.address}</p>
-                      <p className="text-xs font-bold text-slate-800">Drop: {assignments?.[0]?.currentOrderId?.shippingAddress
-?.address}</p>
+
+                    <div className="flex gap-4 mb-6">
+                      <div className="flex flex-col items-center gap-1 mt-1">
+                        <div className="w-2 h-2 rounded-full bg-slate-300" />
+                        <div className="w-[1px] h-4 bg-slate-200" />
+                        <div className="w-2 h-2 rounded-full bg-orange-500" />
+                      </div>
+                      <div className="space-y-3.5">
+                        <p className="text-xs font-medium text-slate-500">Pickup: {order.currentOrderId?.vendor?.address}</p>
+                        <p className="text-xs font-bold text-slate-800">Drop: {order.currentOrderId?.shippingAddress?.address}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button className="flex-1 bg-orange-500 text-white py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                        Accept <ChevronRight size={18} />
+                      </button>
+                      <button className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-red-100">
+                        Reject
+                      </button>
                     </div>
                   </div>
-
-                  <button className="w-full bg-orange-500 text-white py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                    Swipe to Accept <ChevronRight size={18} />
-                  </button>
-                  <button className="w-full bg-red-500 text-white py-2.5 mt-3 rounded-lg pl-135 font-bold flex items-center gap-2 active:scale-95 transition-transform">
-                   <ChevronLeft size={18} />  Swipe to Reject 
-                  </button>
-                </div>
+                )) : (
+                  <p className="text-center text-slate-400 py-10">No orders available right now.</p>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
