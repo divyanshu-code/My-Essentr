@@ -5,16 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import {
   Power,
-  Zap,
   Map,
   Package,
   ChevronRight,
   Star,
-  ChevronLeft,
 } from 'lucide-react';
 import Navbar from '@/Components/Navbar';
 import axios from 'axios';
 import { getSocket } from '@/Config/socket';
+import { toast } from 'react-toastify';
+import { Slide } from 'react-toastify';
 
 const Deliverydashboard = ({ user }) => {
   const [error, setError] = useState(null);
@@ -84,8 +84,6 @@ const Deliverydashboard = ({ user }) => {
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
 
-        console.log(data);
-
         setAssignments(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Fetch error:", error);
@@ -122,13 +120,39 @@ const Deliverydashboard = ({ user }) => {
   };
 
   if (error) {
-
     return (
-
       <div className="text-sm font-medium text-center mt-10">
         <span className="text-red-500">📍 {error}</span>
       </div>
     )
+  }
+
+  const handleAccept = async (id) => {
+    try {
+      const res = await fetch(`/api/delivery/assignments/${id}/acceptassignment`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) throw new Error("Failed to accept assignment");
+
+      const data = await res.json();
+
+    } catch (error) {
+      console.error("Accept error:", error);
+
+      toast.error(error.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Slide,
+      });
+
+    }
   }
 
   return (
@@ -195,49 +219,53 @@ const Deliverydashboard = ({ user }) => {
             ) : (
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-4 pb-20">
 
-                {assignments.length > 0 ? assignments.map((order, index) => (
-                  <div key={order._id || index} className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mb-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-                          <Package size={16} />
-                        </div>
-                        <div className='flex flex-col'>
-                          <div className='flex items-center gap-2'>
-                            <span className="text-xs font-black text-slate-900">Amount: ₹{order.currentOrderId?.totalamount}</span>
-                            <span className="text-xs font-black text-slate-900"> Customer payable amount: ₹{order.currentOrderId?.change?.customerGiveamt}</span>
-                            <span className="text-xs font-black text-slate-900" > {order.currentOrderId?.change?.deliveryReturnamt != 0 ? `Return amount: ${order.currentOrderId?.change?.deliveryReturnamt}` : null}</span>
+                {assignments.length > 0 ?
+                  assignments.map((order, index) => (
+                    <div key={order._id || index} className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mb-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                            <Package size={16} />
                           </div>
-                          <span className="text-xs font-medium text-slate-500">Payment: {order.currentOrderId?.isPaid ? "Paid" : "Pending"}</span>
+                          <div className='flex flex-col'>
+                            <div className='flex items-center gap-2'>
+                              <span className="text-xs font-black text-slate-900">Amount: ₹{order.currentOrderId?.totalamount}</span>
+                              <span className="text-xs font-black text-slate-900"> Customer payable amount: ₹{order.currentOrderId?.change?.customerGiveamt}</span>
+                              <span className="text-xs font-black text-slate-900" > {order.currentOrderId?.change?.deliveryReturnamt != 0 ? `Return amount: ${order.currentOrderId?.change?.deliveryReturnamt}` : null}</span>
+                            </div>
+                            <span className="text-xs font-medium text-slate-500">Payment: {order.currentOrderId?.isPaid ? "Paid" : "Pending"}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400">2.5 KM</span>
+                      </div>
+
+                      <div className="flex gap-4 mb-6">
+                        <div className="flex flex-col items-center gap-1 mt-1">
+                          <div className="w-2 h-2 rounded-full bg-slate-300" />
+                          <div className="w-[1px] h-4 bg-slate-200" />
+                          <div className="w-2 h-2 rounded-full bg-orange-500" />
+                        </div>
+                        <div className="space-y-3.5">
+                          <p className="text-xs font-medium text-slate-500">Pickup: {order.currentOrderId?.vendor?.address || "Loading address..."}</p>
+                          <p className="text-xs font-bold text-slate-800">Drop: {order.currentOrderId?.shippingAddress?.address}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-400">2.5 KM</span>
-                    </div>
 
-                    <div className="flex gap-4 mb-6">
-                      <div className="flex flex-col items-center gap-1 mt-1">
-                        <div className="w-2 h-2 rounded-full bg-slate-300" />
-                        <div className="w-[1px] h-4 bg-slate-200" />
-                        <div className="w-2 h-2 rounded-full bg-orange-500" />
-                      </div>
-                      <div className="space-y-3.5">
-                        <p className="text-xs font-medium text-slate-500">Pickup: {order.currentOrderId?.vendor?.address || "Loading address..."}</p>
-                        <p className="text-xs font-bold text-slate-800">Drop: {order.currentOrderId?.shippingAddress?.address}</p>
-                      </div>
-                    </div>
+                      {order.status === 'broadcasted' &&
 
-                    <div className="flex gap-2">
-                      <button className="flex-1 bg-orange-500 text-white py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                        Accept <ChevronRight size={18} />
-                      </button>
-                      <button className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-red-100">
-                        Reject
-                      </button>
+                        <div className="flex gap-2">
+                          <button onClick={() => handleAccept(order?._id)} className="flex-1 bg-orange-500 text-white py-2 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                            Accept <ChevronRight size={18} />
+                          </button>
+                          <button className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-red-100">
+                            Reject
+                          </button>
+                        </div>
+                      }
                     </div>
-                  </div>
-                )) : (
-                  <p className="text-center text-slate-400 py-10">No orders available right now.</p>
-                )}
+                  )) : (
+                    <p className="text-center text-slate-400 py-10">No orders available right now.</p>
+                  )}
               </motion.div>
             )}
           </AnimatePresence>
