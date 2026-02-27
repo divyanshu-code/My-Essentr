@@ -84,6 +84,8 @@ const Deliverydashboard = ({ user }) => {
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
 
+        console.log(data);
+
         setAssignments(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Fetch error:", error);
@@ -201,7 +203,11 @@ const Deliverydashboard = ({ user }) => {
                           <Package size={16} />
                         </div>
                         <div className='flex flex-col'>
-                          <span className="text-xs font-black text-slate-900">Amount: ₹{order.currentOrderId?.totalamount}</span>
+                          <div className='flex items-center gap-2'>
+                            <span className="text-xs font-black text-slate-900">Amount: ₹{order.currentOrderId?.totalamount}</span>
+                            <span className="text-xs font-black text-slate-900"> Customer payable amount: ₹{order.currentOrderId?.change?.customerGiveamt}</span>
+                            <span className="text-xs font-black text-slate-900" > {order.currentOrderId?.change?.deliveryReturnamt != 0 ? `Return amount: ${order.currentOrderId?.change?.deliveryReturnamt}` : null}</span>
+                          </div>
                           <span className="text-xs font-medium text-slate-500">Payment: {order.currentOrderId?.isPaid ? "Paid" : "Pending"}</span>
                         </div>
                       </div>

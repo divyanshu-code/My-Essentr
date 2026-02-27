@@ -40,6 +40,8 @@ const MyOrders = () => {
 
                 const order = await response.json()
 
+                console.log(order);
+
                 setorderdata(order)
                 setloading(false)
 

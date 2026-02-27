@@ -9,10 +9,12 @@ import Link from 'next/link'
 import { toast, Slide } from 'react-toastify';
 import { getSocket } from '@/Config/socket'
 import { useSelector } from 'react-redux'
+import Image from 'next/image'
 
 const ManageOrders = () => {
     const [orders, setOrders] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [expanded, setexpanded] = useState(null)
 
     const userdata = useSelector((state) => state.user.userData);
 
@@ -123,7 +125,12 @@ const ManageOrders = () => {
 
         socket?.on("newOrder", (data) => {
 
-            setOrders((prev) => [data, ...prev]);
+            setOrders((prev) => {
+
+                const exists = prev.find(o => o._id === data._id);
+                if (exists) return prev;
+                return [data, ...prev];
+            });
         })
 
         return () => {
@@ -207,32 +214,37 @@ const ManageOrders = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    <AnimatePresence mode='popLayout'>
-                                        {filteredOrders.map((order) => (
+                                    {filteredOrders.map((order) => (
+                                        <React.Fragment key={order._id}>
                                             <motion.tr
-                                                key={order._id}
                                                 layout
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0, scale: 0.98 }}
                                                 className="group hover:bg-white/2 transition-colors"
                                             >
-                                                <td className="px-5 py-5 w-130 flex flex-col">
+                                                <td className="px-5 py-5">
                                                     <div className="font-black text-white"># {order?._id?.toString()?.slice(-6)}</div>
-                                                    <div className="text-zinc-500 text-[10px] font-bold  uppercase">{new Date(order.createdAt).toLocaleString()}</div>
-                                                    <div className="text-zinc-400 text-[10px] font-bold mt-5 uppercase ">{order.shippingAddress?.mobile}</div>
-                                                    <div className="text-zinc-400 text-[10px] font-bold  uppercase">{order.shippingAddress?.address}</div>
-                                                    <div className="text-zinc-400 text-[10px] font-bold  uppercase">{order.paymentMethod}</div>
+                                                    <div className="text-zinc-500 text-[10px] font-bold uppercase">{new Date(order.createdAt).toLocaleString()}</div>
+                                                    <div className="text-zinc-400 text-[10px] font-bold mt-3 uppercase">{order.shippingAddress?.address}</div>
+                                                    <div className='text-zinc-400 text-[10px] font-bold uppercase'>{order.shippingAddress?.mobile}</div>
+                                                    <div className='text-zinc-400 text-[10px] font-bold uppercase'>
+                                                    <p>{order?.paymentMethod}</p> 
+                                                    <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Needchange: ${order?.change.customerGiveamt}` : null }</p> 
+                                                    <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change. deliveryReturnamt}` : null }</p> 
+                                                    </div>
                                                 </td>
+
                                                 <td className="px-8 py-6">
                                                     <div className="font-bold text-sm">{order.shippingAddress.name}</div>
                                                     <div className="text-zinc-500 text-xs">{order.items.length} Items</div>
                                                 </td>
+
                                                 <td className="px-8 py-6">
                                                     <div className="text-emerald-400 font-black">₹{order.totalamount}</div>
                                                 </td>
+
                                                 <td className="px-8 py-5">
-                                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black  tracking-widest border ${statusColors[order.status]}`}>
+                                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${statusColors[order.status]}`}>
                                                         {order.status}
                                                     </span>
                                                 </td>
@@ -242,19 +254,61 @@ const ManageOrders = () => {
                                                         {order.isPaid ? "Paid" : "Unpaid"}
                                                     </span>
                                                 </td>
+
                                                 <td className="px-8 py-6 text-right">
-                                                    <select
-                                                        value={order.status}
-                                                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                                        className="bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest px-1 py-2 text-center rounded-md  border border-white/10 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                                                    <div className="flex flex-col gap-2 items-end">
+                                                        <select
+                                                            value={order.status}
+                                                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                                                            className="bg-zinc-800 text-white text-[9px] font-black uppercase tracking-widest px-2 py-2 rounded-md border border-white/10 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                                                        >
+                                                            <option value="Pending">Pending</option>
+                                                            <option value="Out for delivery">Out for delivery</option>
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        onClick={() => setexpanded(expanded === order._id ? null : order._id)}
+                                                        className="text-[9px] border px-2 py-2 mr-2 rounded-md  border-white/10  font-bold text-zinc-500 hover:text-emerald-500 transition-colors uppercase cursor-pointer"
                                                     >
-                                                        <option value="Pending">Pending</option>
-                                                        <option value="Out for delivery">Out for delivery</option>
-                                                    </select>
+                                                        {expanded === order._id ? "Hide Items" : `View ${order.items.length} Items`}
+                                                    </button>
                                                 </td>
                                             </motion.tr>
-                                        ))}
-                                    </AnimatePresence>
+
+                                            <AnimatePresence>
+                                                {expanded === order._id && (
+                                                    <tr>
+                                                        <td colSpan="6" className="px-5 pb-5 bg-zinc-900/20">
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                                                    {order.items.map((item, index) => (
+                                                                        <div key={index} className="flex justify-between items-center bg-zinc-800/50 rounded-lg px-4 py-3 border border-white/5">
+                                                                            <div className="flex items-center gap-4">
+                                                                                {/* Ensure Image is imported from 'next/image' */}
+                                                                                <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover" />
+                                                                                <div>
+                                                                                    <p className="text-xs font-bold text-white">{item.name}</p>
+                                                                                    <p className="text-[10px] text-zinc-400">{item.quantity} x {item.unit}{item.unit1}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <p className="text-xs font-black text-emerald-400">₹{item.price}</p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </AnimatePresence>
+                                        </React.Fragment>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
