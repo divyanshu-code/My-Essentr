@@ -7,6 +7,7 @@ import { MdLocationOn } from "react-icons/md";
 import Link from 'next/link'
 import Image from 'next/image';
 import { getSocket } from '@/Config/socket';
+import { PhoneCall, UserCheck } from 'lucide-react';
 
 const MyOrders = () => {
 
@@ -147,7 +148,7 @@ const MyOrders = () => {
                                         </div>
                                     </div>
 
-                                    <div className='mt-10 flex items-center justify-between'>
+                                    <div className='mt-10 mb-2 flex items-center justify-between'>
                                         <div className='flex items-center justify-center gap-1'>
                                             <MdLocationOn size={13} />
                                             <p className="text-zinc-400 text-sm font-medium">{order?.shippingAddress?.address}</p>
@@ -157,7 +158,27 @@ const MyOrders = () => {
                                             {order.paymentMethod === 'razorpay' ? 'Online' : 'cod'}
                                         </div>
                                     </div>
-                                    <div className="mt-5 pt-3 border-t border-white/5 flex items-center justify-between">
+
+                                    {order.assignedDeliverypartner &&
+                                        <div className='border py-2  px-4 border-zinc-400/20 rounded-lg  w-98'>
+                                            <div className='flex items-center gap-50 '>
+                                                <div>
+                                                    <div className='flex items-center gap-2 '>
+                                                        <UserCheck size={15} />
+                                                        <p className='text-white text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
+                                                    </div>
+                                                    <div className='flex items-center gap-2 mt-1 '>
+                                                        <PhoneCall size={14} />
+                                                        <p className='text-white text-[12px] font-bold '>{order.assignedDeliverypartner.mobile}</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/10 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Call</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div className=" pt-3 mt-5 border-t border-white/5 flex items-center justify-between">
                                         <div className="flex items-center justify-between gap-3">
                                             {expanded != order._id && (
 

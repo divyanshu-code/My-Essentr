@@ -254,10 +254,10 @@ const Deliverydashboard = ({ user }) => {
                       {order.status === 'broadcasted' &&
 
                         <div className="flex gap-2">
-                          <button onClick={() => handleAccept(order?._id)} className="flex-1 bg-orange-500 text-white py-2 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                          <button onClick={() => handleAccept(order?._id)} className="flex-1 bg-orange-500 text-white py-2 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer">
                             Accept <ChevronRight size={18} />
                           </button>
-                          <button className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-red-100">
+                          <button className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform border border-red-100 cursor-pointer">
                             Reject
                           </button>
                         </div>

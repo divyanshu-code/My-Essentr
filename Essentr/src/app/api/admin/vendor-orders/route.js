@@ -19,7 +19,7 @@ export async function GET(req) {
       vendor: vendorId 
     })
     .sort({ createdAt: -1 }) 
-    .populate('user'); 
+    .populate('user assignedDeliverypartner'); 
 
     return NextResponse.json(orders, { status: 200 });
 

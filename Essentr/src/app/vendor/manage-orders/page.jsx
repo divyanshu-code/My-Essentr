@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { toast, Slide } from 'react-toastify';
 import { getSocket } from '@/Config/socket'
 import { useSelector } from 'react-redux'
-import Image from 'next/image'
+import { PhoneCall, UserCheck } from 'lucide-react'
 
 const ManageOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -208,9 +208,10 @@ const ManageOrders = () => {
                                         <th className="px-5 py-5">Order Info</th>
                                         <th className="px-5 py-5">Customer</th>
                                         <th className="px-1 py-5">Total Amount</th>
-                                        <th className="px-15 py-5">Status</th>
+                                        <th className="px-10 py-5">Status</th>
                                         <th className="px-1 py-5">Payment status</th>
                                         <th className="px-19 py-5">Actions</th>
+                                        <th className=" px-5 py-5">Items</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
@@ -228,9 +229,9 @@ const ManageOrders = () => {
                                                     <div className="text-zinc-400 text-[10px] font-bold mt-3 uppercase">{order.shippingAddress?.address}</div>
                                                     <div className='text-zinc-400 text-[10px] font-bold uppercase'>{order.shippingAddress?.mobile}</div>
                                                     <div className='text-zinc-400 text-[10px] font-bold uppercase'>
-                                                    <p>{order?.paymentMethod}</p> 
-                                                    <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Needchange: ${order?.change.customerGiveamt}` : null }</p> 
-                                                    <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change. deliveryReturnamt}` : null }</p> 
+                                                        <p>{order?.paymentMethod}</p>
+                                                        <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Needchange: ${order?.change.customerGiveamt}` : null}</p>
+                                                        <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change.deliveryReturnamt}` : null}</p>
                                                     </div>
                                                 </td>
 
@@ -243,7 +244,7 @@ const ManageOrders = () => {
                                                     <div className="text-emerald-400 font-black">₹{order.totalamount}</div>
                                                 </td>
 
-                                                <td className="px-8 py-5">
+                                                <td className="px-5 py-5">
                                                     <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${statusColors[order.status]}`}>
                                                         {order.status}
                                                     </span>
@@ -275,7 +276,35 @@ const ManageOrders = () => {
                                                         {expanded === order._id ? "Hide Items" : `View ${order.items.length} Items`}
                                                     </button>
                                                 </td>
+
                                             </motion.tr>
+
+                                            <motion.tr
+                                                layout
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className="">
+                                                <td className='px-5'>
+                                                    {order.assignedDeliverypartner &&
+                                                        <div className='flex items-center gap-55'>
+                                                            <div>
+                                                                <div className='flex items-center gap-2 mt-2'>
+                                                                    <UserCheck size={15} />
+                                                                    <p className='text-white  text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
+                                                                </div>
+                                                                <div className='flex items-center gap-2 mt-1 mb-2'>
+                                                                    <PhoneCall size={14} />
+                                                                    <p className='text-white text-[12px] font-bold '>{order.assignedDeliverypartner.mobile}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/10 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Call</a>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </td>
+                                            </motion.tr>
+
 
                                             <AnimatePresence>
                                                 {expanded === order._id && (
@@ -291,7 +320,6 @@ const ManageOrders = () => {
                                                                     {order.items.map((item, index) => (
                                                                         <div key={index} className="flex justify-between items-center bg-zinc-800/50 rounded-lg px-4 py-3 border border-white/5">
                                                                             <div className="flex items-center gap-4">
-                                                                                {/* Ensure Image is imported from 'next/image' */}
                                                                                 <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover" />
                                                                                 <div>
                                                                                     <p className="text-xs font-bold text-white">{item.name}</p>

@@ -745,7 +745,7 @@ const CheckoutPage = () => {
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-zinc-900 p-8 rounded-xl border border-emerald-500/30">
                     <p className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-4">Select the note you will pay with:</p>
                     <div className="flex gap-4 mb-6">
-                      {[nextRoundFigure, nextRoundFigure + 100, 500, 2000].filter(val => val >= total).map(val => (
+                      {[...new Set([nextRoundFigure, nextRoundFigure + 100, 500, 2000])].filter(val => val >= total).map(val => (
                         <button
                           key={val}
                           onClick={() => setRoundUpTo(val)}
