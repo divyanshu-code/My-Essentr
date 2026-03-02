@@ -198,151 +198,160 @@ const ManageOrders = () => {
                 </div>
             </div>
 
-            <main className="flex-1 overflow-y-auto px-6 md:px-12 pb-10 ">
-                <div className="max-w-7xl mx-auto">
-                    <div className="bg-zinc-900/30 border border-white/5 rounded-lg">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="sticky top-0 z-10 bg-[#0F0F10]">
-                                    <tr className="text-zinc-500 text-[10px] font-black border-b border-white/8 uppercase tracking-[0.2em]">
-                                        <th className="px-5 py-5">Order Info</th>
-                                        <th className="px-5 py-5">Customer</th>
-                                        <th className="px-1 py-5">Total Amount</th>
-                                        <th className="px-10 py-5">Status</th>
-                                        <th className="px-1 py-5">Payment status</th>
-                                        <th className="px-19 py-5">Actions</th>
-                                        <th className=" px-5 py-5">Items</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {filteredOrders.map((order) => (
-                                        <React.Fragment key={order._id}>
-                                            <motion.tr
-                                                layout
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                className="group hover:bg-white/2 transition-colors"
-                                            >
-                                                <td className="px-5 py-5">
-                                                    <div className="font-black text-white"># {order?._id?.toString()?.slice(-6)}</div>
-                                                    <div className="text-zinc-500 text-[10px] font-bold uppercase">{new Date(order.createdAt).toLocaleString()}</div>
-                                                    <div className="text-zinc-400 text-[10px] font-bold mt-3 uppercase">{order.shippingAddress?.address}</div>
-                                                    <div className='text-zinc-400 text-[10px] font-bold uppercase'>{order.shippingAddress?.mobile}</div>
-                                                    <div className='text-zinc-400 text-[10px] font-bold uppercase'>
-                                                        <p>{order?.paymentMethod}</p>
-                                                        <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Needchange: ${order?.change.customerGiveamt}` : null}</p>
-                                                        <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change.deliveryReturnamt}` : null}</p>
-                                                    </div>
-                                                </td>
-
-                                                <td className="px-8 py-6">
-                                                    <div className="font-bold text-sm">{order.shippingAddress.name}</div>
-                                                    <div className="text-zinc-500 text-xs">{order.items.length} Items</div>
-                                                </td>
-
-                                                <td className="px-8 py-6">
-                                                    <div className="text-emerald-400 font-black">₹{order.totalamount}</div>
-                                                </td>
-
-                                                <td className="px-5 py-5">
-                                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${statusColors[order.status]}`}>
-                                                        {order.status}
-                                                    </span>
-                                                </td>
-
-                                                <td className="px-8 py-6">
-                                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${order.isPaid ? `text-emerald-500 bg-emerald-500/10 border-emerald-500/20` : `text-red-500 bg-red-500/10 border-red-500/20`}`}>
-                                                        {order.isPaid ? "Paid" : "Unpaid"}
-                                                    </span>
-                                                </td>
-
-                                                <td className="px-8 py-6 text-right">
-                                                    <div className="flex flex-col gap-2 items-end">
-                                                        <select
-                                                            value={order.status}
-                                                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                                            className="bg-zinc-800 text-white text-[9px] font-black uppercase tracking-widest px-2 py-2 rounded-md border border-white/10 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                                                        >
-                                                            <option value="Pending">Pending</option>
-                                                            <option value="Out for delivery">Out for delivery</option>
-                                                        </select>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        onClick={() => setexpanded(expanded === order._id ? null : order._id)}
-                                                        className="text-[9px] border px-2 py-2 mr-2 rounded-md  border-white/10  font-bold text-zinc-500 hover:text-emerald-500 transition-colors uppercase cursor-pointer"
-                                                    >
-                                                        {expanded === order._id ? "Hide Items" : `View ${order.items.length} Items`}
-                                                    </button>
-                                                </td>
-
-                                            </motion.tr>
-
-                                            <motion.tr
-                                                layout
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                className="">
-                                                <td className='px-5'>
-                                                    {order.assignedDeliverypartner &&
-                                                        <div className='flex items-center gap-55'>
-                                                            <div>
-                                                                <div className='flex items-center gap-2 mt-2'>
-                                                                    <UserCheck size={15} />
-                                                                    <p className='text-white  text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
-                                                                </div>
-                                                                <div className='flex items-center gap-2 mt-1 mb-2'>
-                                                                    <PhoneCall size={14} />
-                                                                    <p className='text-white text-[12px] font-bold '>{order.assignedDeliverypartner.mobile}</p>
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/10 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Call</a>
-                                                            </div>
+            {filteredOrders.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64">
+                    <div className="w-15 h-15 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-6 text-zinc-700">
+                        <FaBox size={25} />
+                    </div>
+                    <p className="text-zinc-500 text-xl font-black ">No orders found.</p>
+                </div>
+            ) : (
+                <main className="flex-1 overflow-y-auto px-6 md:px-12 pb-10 ">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="bg-zinc-900/30 border border-white/5 rounded-lg">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="sticky top-0 z-10 bg-[#0F0F10]">
+                                        <tr className="text-zinc-500 text-[10px] font-black border-b border-white/8 uppercase tracking-[0.2em]">
+                                            <th className="px-5 py-5">Order Info</th>
+                                            <th className="px-5 py-5">Customer</th>
+                                            <th className="px-1 py-5">Total Amount</th>
+                                            <th className="px-10 py-5">Status</th>
+                                            <th className="px-1 py-5">Payment status</th>
+                                            <th className="px-19 py-5">Actions</th>
+                                            <th className=" px-5 py-5">Items</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {filteredOrders.map((order) => (
+                                            <React.Fragment key={order._id}>
+                                                <motion.tr
+                                                    layout
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    className="group hover:bg-white/2 transition-colors"
+                                                >
+                                                    <td className="px-5 py-5">
+                                                        <div className="font-black text-white"># {order?._id?.toString()?.slice(-6)}</div>
+                                                        <div className="text-zinc-500 text-[10px] font-bold uppercase">{new Date(order.createdAt).toLocaleString()}</div>
+                                                        <div className="text-zinc-400 text-[10px] font-bold mt-3 uppercase">{order.shippingAddress?.address}</div>
+                                                        <div className='text-zinc-400 text-[10px] font-bold uppercase'>{order.shippingAddress?.mobile}</div>
+                                                        <div className='text-zinc-400 text-[10px] font-bold uppercase'>
+                                                            <p>{order?.paymentMethod}</p>
+                                                            <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Needchange: ${order?.change.customerGiveamt}` : null}</p>
+                                                            <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change.deliveryReturnamt}` : null}</p>
                                                         </div>
-                                                    }
-                                                </td>
-                                            </motion.tr>
+                                                    </td>
 
+                                                    <td className="px-8 py-6">
+                                                        <div className="font-bold text-sm">{order.shippingAddress.name}</div>
+                                                        <div className="text-zinc-500 text-xs">{order.items.length} Items</div>
+                                                    </td>
 
-                                            <AnimatePresence>
-                                                {expanded === order._id && (
-                                                    <tr>
-                                                        <td colSpan="6" className="px-5 pb-5 bg-zinc-900/20">
-                                                            <motion.div
-                                                                initial={{ height: 0, opacity: 0 }}
-                                                                animate={{ height: "auto", opacity: 1 }}
-                                                                exit={{ height: 0, opacity: 0 }}
-                                                                className="overflow-hidden"
+                                                    <td className="px-8 py-6">
+                                                        <div className="text-emerald-400 font-black">₹{order.totalamount}</div>
+                                                    </td>
+
+                                                    <td className="px-5 py-5">
+                                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${statusColors[order.status]}`}>
+                                                            {order.status}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="px-8 py-6">
+                                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${order.isPaid ? `text-emerald-500 bg-emerald-500/10 border-emerald-500/20` : `text-red-500 bg-red-500/10 border-red-500/20`}`}>
+                                                            {order.isPaid ? "Paid" : "Unpaid"}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="px-8 py-6 text-right">
+                                                        <div className="flex flex-col gap-2 items-end">
+                                                            <select
+                                                                value={order.status}
+                                                                onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                                                                className="bg-zinc-800 text-white text-[9px] font-black uppercase tracking-widest px-2 py-2 rounded-md border border-white/10 focus:outline-none focus:border-emerald-500 cursor-pointer"
                                                             >
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                                                                    {order.items.map((item, index) => (
-                                                                        <div key={index} className="flex justify-between items-center bg-zinc-800/50 rounded-lg px-4 py-3 border border-white/5">
-                                                                            <div className="flex items-center gap-4">
-                                                                                <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover" />
-                                                                                <div>
-                                                                                    <p className="text-xs font-bold text-white">{item.name}</p>
-                                                                                    <p className="text-[10px] text-zinc-400">{item.quantity} x {item.unit}{item.unit1}</p>
-                                                                                </div>
-                                                                            </div>
-                                                                            <p className="text-xs font-black text-emerald-400">₹{item.price}</p>
-                                                                        </div>
-                                                                    ))}
+                                                                <option value="Pending">Pending</option>
+                                                                <option value="Out for delivery">Out for delivery</option>
+                                                            </select>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            onClick={() => setexpanded(expanded === order._id ? null : order._id)}
+                                                            className="text-[9px] border px-2 py-2 mr-2 rounded-md  border-white/10  font-bold text-zinc-500 hover:text-emerald-500 transition-colors uppercase cursor-pointer"
+                                                        >
+                                                            {expanded === order._id ? "Hide Items" : `View ${order.items.length} Items`}
+                                                        </button>
+                                                    </td>
+
+                                                </motion.tr>
+
+                                                <motion.tr
+                                                    layout
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    className="">
+                                                    <td className='px-5'>
+                                                        {order.assignedDeliverypartner &&
+                                                            <div className='flex items-center gap-55'>
+                                                                <div>
+                                                                    <div className='flex items-center gap-2 mt-2'>
+                                                                        <UserCheck size={15} />
+                                                                        <p className='text-white  text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
+                                                                    </div>
+                                                                    <div className='flex items-center gap-2 mt-1 mb-2'>
+                                                                        <PhoneCall size={14} />
+                                                                        <p className='text-white text-[12px] font-bold '>{order.assignedDeliverypartner.mobile}</p>
+                                                                    </div>
                                                                 </div>
-                                                            </motion.div>
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                            </AnimatePresence>
-                                        </React.Fragment>
-                                    ))}
-                                </tbody>
-                            </table>
+                                                                <div>
+                                                                    <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/10 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Call</a>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </td>
+                                                </motion.tr>
+
+
+                                                <AnimatePresence>
+                                                    {expanded === order._id && (
+                                                        <tr>
+                                                            <td colSpan="6" className="px-5 pb-5 bg-zinc-900/20">
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: "auto", opacity: 1 }}
+                                                                    exit={{ height: 0, opacity: 0 }}
+                                                                    className="overflow-hidden"
+                                                                >
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                                                        {order.items.map((item, index) => (
+                                                                            <div key={index} className="flex justify-between items-center bg-zinc-800/50 rounded-lg px-4 py-3 border border-white/5">
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover" />
+                                                                                    <div>
+                                                                                        <p className="text-xs font-bold text-white">{item.name}</p>
+                                                                                        <p className="text-[10px] text-zinc-400">{item.quantity} x {item.unit}{item.unit1}</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <p className="text-xs font-black text-emerald-400">₹{item.price}</p>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </motion.div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </AnimatePresence>
+                                            </React.Fragment>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            )}
         </div>
     )
 }

@@ -9,8 +9,14 @@ const orderSchema = new mongoose.Schema({
 
     vendor: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Vendor', 
+        ref: 'Vendor',
         required: true,
+    },
+    
+    parentOrder: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MasterOrder',
+        default: null
     },
 
     items: [
@@ -34,7 +40,7 @@ const orderSchema = new mongoose.Schema({
             unit: {
                 type: String
             },
-            unit1:{
+            unit1: {
                 type: String
             },
             image: {
@@ -67,7 +73,7 @@ const orderSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ["Pending", "Out for delivery", "Delivered" , "Cancelled"],
+        enum: ["Pending", "Out for delivery", "Delivered", "Cancelled"],
         default: "Pending"
     },
 
@@ -85,28 +91,28 @@ const orderSchema = new mongoose.Schema({
         }
     },
 
-    isPaid: { 
-        type: Boolean, 
-        default: false 
+    isPaid: {
+        type: Boolean,
+        default: false
     },
-    
-    razorpayOrderId: { 
+
+    razorpayOrderId: {
         type: String,
-        required: false 
+        required: false
     },
 
-    assignedDeliverypartner :{
-         type : mongoose.Schema.Types.ObjectId,
-         ref: 'User',
+    assignedDeliverypartner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
 
-    assigned :{
-         type : mongoose.Schema.Types.ObjectId,
-         ref: 'Delivery',
-         default: null
+    assigned: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Delivery',
+        default: null
     }
 
-}, {  timestamps: true });
+}, { timestamps: true });
 
 orderSchema.index({ vendor: 1, createdAt: -1 });
 

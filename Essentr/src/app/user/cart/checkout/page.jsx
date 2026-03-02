@@ -215,7 +215,7 @@ const CheckoutPage = () => {
           if (result.success) {
             setPaymentId(response.razorpay_payment_id);
             setIsSuccess(true);
-           
+
           } else {
             alert("Payment verification failed. Please contact support.");
           }
@@ -280,6 +280,22 @@ const CheckoutPage = () => {
     setLoading(true);
     e.preventDefault();
 
+    const groupedItems = items.reduce((acc, item) => {
+      const vId = item.vendor._id || item.vendor;
+      if (!acc[vId]) acc[vId] = [];
+      acc[vId].push({
+        product: item._id,
+        quantity: item.quantity,
+        price: item.price,
+        name: item.name,
+        image: item.image,
+        unit: item.unit,
+        unit1: item.unit1,
+        vendor: vId
+      });
+      return acc;
+    }, {});
+
     try {
 
       const response = await fetch('/api/auth/order', {
@@ -288,19 +304,7 @@ const CheckoutPage = () => {
         body: JSON.stringify({
 
           userId: data?._id,
-          items: items.map(item => (
-            {
-
-              product: item._id,
-              quantity: item.quantity,
-              price: item.price,
-              name: item.name,
-              image: item.image,
-              unit: item.unit,
-              unit1: item.unit1,
-              vendor: item.vendor
-            }
-          )),
+          items: groupedItems,
           shippingAddress: {
             name: formData.name,
             mobile: formData.mobile,
@@ -324,7 +328,7 @@ const CheckoutPage = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setPaymentId(result.createdOrders[0]._id);
+        setPaymentId(result.masterOrderId);
         setIsSuccess(true);
 
         setLoading(false);
@@ -610,7 +614,7 @@ const CheckoutPage = () => {
                             position={position}
                             setPosition={setPosition}
                             Leaflet={Leaflet}
-                            />
+                          />
 
                         </Leaflet.MapContainer>
                         <button
@@ -763,9 +767,7 @@ const CheckoutPage = () => {
                 )}
 
                 <div className="flex gap-4">
-
                   <button onClick={handlesubmit} className="flex-2 py-3 bg-emerald-500 cursor-pointer text-black font-black rounded-lg">
-
                     {loading ? (
                       <div className='flex items-center justify-center'>
                         <TbLoaderQuarter className='animate-spin text-2xl ' />
