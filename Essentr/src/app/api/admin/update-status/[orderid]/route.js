@@ -4,6 +4,7 @@ import UserModel from '@/Models/userModel';
 import { NextResponse } from 'next/server';
 import DeliveryassignModel from '@/Models/deliveryassignModel';
 import Emiteventhandler from '@/Config/Emiteventhandler';
+import MasterOrderModel from '@/Models/masterModel';
 
 export async function POST(request, { params }) {
     try {
@@ -22,26 +23,30 @@ export async function POST(request, { params }) {
             );
         }
 
-        const order = await OrderModel.findById(orderid).populate("user")
+        const childorder = await OrderModel.findById(orderid).populate("user")
 
-        if (!order) {
+        if (!childorder) {
             return NextResponse.json(
                 { error: 'Order not found' },
                 { status: 400 }
             );
         }
 
+        const masterOrder = await MasterOrderModel.findById(childorder.parentOrder);
+        if (!masterOrder) {
+            return NextResponse.json({ error: 'Master order not found' }, { status: 400 });
+        }
 
         let deliverypartner = [];
 
-        if (status == "Out for delivery" && !order.assigned) {
+        if (status == "Out for delivery" && !childorder.assigned) {
 
-            const existingAssignment = await DeliveryassignModel.findOne({ currentOrderId: orderid });
+            const existingAssignment = await DeliveryassignModel.findOne({ masterOrderId: masterOrder._id });
             if (existingAssignment) {
                 return NextResponse.json({ message: "Assignment already exists" }, { status: 200 });
             }
 
-            const { latitude, longitude } = order.shippingAddress;
+            const { latitude, longitude } = masterOrder.shippingAddress;
 
             const nearestDeliveryPartner = await UserModel.find({
                 role: "delivery",
@@ -75,7 +80,7 @@ export async function POST(request, { params }) {
             const candidates = availableDeliveryPartnerObjects.map((b) => b._id)
 
             if (candidates.length === 0) {
-                await order.save();
+                await childorder.save();
 
                 return NextResponse.json(
                     { error: 'No available delivery partners found' },
@@ -84,34 +89,28 @@ export async function POST(request, { params }) {
             }
 
             const deliveryAssign = await DeliveryassignModel.create({
-                currentOrderId: order._id,
+                masterOrderId: masterOrder._id,
+                currentOrderId: childorder._id,
                 broadCastedTo: candidates,
                 status: "broadcasted",
-                vendorId: order.vendor?._id || order?.vendor,
+                vendorId: childorder.vendor?._id || childorder?.vendor,
             });
 
-            order.status = status
-            order.assigned = deliveryAssign._id;
+            masterOrder.assigned = deliveryAssign._id;
+            await masterOrder.save();
 
-            await deliveryAssign.populate({
-                path: 'currentOrderId',
-                populate: {
-                    path: 'vendor',    // Order model mein jo vendor field hai (User ID)
-                    model: 'Vendor',   // Force Mongoose to look into Vendor collection
-                    foreignField: 'userId', // Vendor collection mein 'userId' field se match karo
-                    localField: 'vendor'
-                }
-            });
-
-            await deliveryAssign.populate('vendorId');
+            const populatedAssign = await DeliveryassignModel.findById(deliveryAssign._id)
+                .populate({
+                    path: 'masterOrderId',
+                    populate: { path: 'childOrders' }
+                });
 
             for (const boyId of candidates) {
                 const boy = await UserModel.findById(boyId)
                 if (boy?.socketId) {
-                    await Emiteventhandler("new-assignments", deliveryAssign, boy.socketId)
+                    await Emiteventhandler("new-assignments", populatedAssign, boy.socketId)
                 }
             }
-
 
             deliverypartner = availableDeliveryPartnerObjects.map(b => ({
                 id: b._id,
@@ -120,23 +119,24 @@ export async function POST(request, { params }) {
                 latitude: b.location.coordinates[1],
                 longitude: b.location.coordinates[0],
             }));
-        } {
+        } 
 
-            order.status = status;
+        childorder.status = status;
+
+        if (masterOrder.assigned) {
+            childorder.assigned = masterOrder.assigned;
         }
-
-        await order.save();
-        await order.populate("user")
-        await order.populate("vendor")
+        
+        await childorder.save();
 
         await Emiteventhandler("order_status_updated", {
-            orderId: order._id,
-            status: order.status,
+            orderId: childorder._id,
+            masterId: masterOrder._id,
+            status: childorder.status,
         })
 
         return NextResponse.json({
             success: true,
-            assign: order.assigned?._id,
             availablePartners: deliverypartner
         }, { status: 200 })
 

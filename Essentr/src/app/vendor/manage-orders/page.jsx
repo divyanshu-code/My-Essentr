@@ -138,7 +138,6 @@ const ManageOrders = () => {
         }
     }, [])
 
-
     return (
         <div className="h-182 w-full bg-[#0A0A0B] text-white flex flex-col overflow-hidden font-sans">
 
@@ -178,9 +177,9 @@ const ManageOrders = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                         {[
                             { label: 'Total Orders', value: orders?.length || 0, icon: FaBox, color: 'text-blue-500' },
-                            { label: 'Pending', value: orders?.filter(o => o.status === 'Pending').length || 0, icon: FaClock, color: 'text-amber-500' },
-                            { label: 'Processing', value: orders?.filter(o => o.status === 'Out for delivery').length || 0, icon: FaTruck, color: 'text-purple-400' },
-                            { label: 'Completed', value: orders?.filter(o => o.status === 'Delivered').length || 0, icon: FaCheckCircle, color: 'text-emerald-500' },
+                            { label: 'Pending', value: orders?.filter(o => o?.status === 'Pending')?.length || 0, icon: FaClock, color: 'text-amber-500' },
+                            { label: 'Processing', value: orders?.filter(o => o?.status === 'Out for delivery')?.length || 0, icon: FaTruck, color: 'text-purple-400' },
+                            { label: 'Completed', value: orders?.filter(o => o?.status === 'Delivered')?.length || 0, icon: FaCheckCircle, color: 'text-emerald-500' },
                         ].map((stat, i) => (
                             <motion.div
                                 key={i}
@@ -198,7 +197,7 @@ const ManageOrders = () => {
                 </div>
             </div>
 
-            {filteredOrders.length === 0 ? (
+            {filteredOrders?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64">
                     <div className="w-15 h-15 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-6 text-zinc-700">
                         <FaBox size={25} />
@@ -223,7 +222,7 @@ const ManageOrders = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {filteredOrders.map((order) => (
+                                        {filteredOrders?.map((order) => (
                                             <React.Fragment key={order._id}>
                                                 <motion.tr
                                                     layout
@@ -245,11 +244,11 @@ const ManageOrders = () => {
 
                                                     <td className="px-8 py-6">
                                                         <div className="font-bold text-sm">{order.shippingAddress.name}</div>
-                                                        <div className="text-zinc-500 text-xs">{order.items.length} Items</div>
+                                                        <div className="text-zinc-500 text-xs">{order?.items?.length} Items</div>
                                                     </td>
 
                                                     <td className="px-8 py-6">
-                                                        <div className="text-emerald-400 font-black">₹{order.totalamount}</div>
+                                                        <div className="text-emerald-400 font-black">₹{order?.totalamount}</div>
                                                     </td>
 
                                                     <td className="px-5 py-5">
@@ -281,10 +280,9 @@ const ManageOrders = () => {
                                                             onClick={() => setexpanded(expanded === order._id ? null : order._id)}
                                                             className="text-[9px] border px-2 py-2 mr-2 rounded-md  border-white/10  font-bold text-zinc-500 hover:text-emerald-500 transition-colors uppercase cursor-pointer"
                                                         >
-                                                            {expanded === order._id ? "Hide Items" : `View ${order.items.length} Items`}
+                                                            {expanded === order._id ? "Hide Items" : `View ${order?.items?.length || 0} Items`}
                                                         </button>
                                                     </td>
-
                                                 </motion.tr>
 
                                                 <motion.tr
@@ -313,7 +311,6 @@ const ManageOrders = () => {
                                                     </td>
                                                 </motion.tr>
 
-
                                                 <AnimatePresence>
                                                     {expanded === order._id && (
                                                         <tr>
@@ -325,7 +322,7 @@ const ManageOrders = () => {
                                                                     className="overflow-hidden"
                                                                 >
                                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                                                                        {order.items.map((item, index) => (
+                                                                        {order?.items?.map((item, index) => (
                                                                             <div key={index} className="flex justify-between items-center bg-zinc-800/50 rounded-lg px-4 py-3 border border-white/5">
                                                                                 <div className="flex items-center gap-4">
                                                                                     <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover" />

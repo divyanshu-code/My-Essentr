@@ -8,6 +8,11 @@ const deliveryBoySchema = new mongoose.Schema({
         default: null
     },
 
+    masterOrderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MasterOrder'
+    },
+
     vendorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -39,6 +44,6 @@ const deliveryBoySchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-const DeliveryassignModel =  mongoose.models.Delivery || mongoose.model('Delivery', deliveryBoySchema);
+const DeliveryassignModel = mongoose.models.Delivery || mongoose.model('Delivery', deliveryBoySchema);
 
-export default  DeliveryassignModel ;
+export default DeliveryassignModel;

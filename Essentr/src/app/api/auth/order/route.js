@@ -22,7 +22,7 @@ export async function POST(request) {
         });
 
         const childOrderIds = [];
-        
+
         for (const vendorId in items) {
             const vendorItems = items[vendorId];
             const vendorTotal = vendorItems.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
@@ -36,15 +36,18 @@ export async function POST(request) {
                 shippingAddress,
                 parentOrder: masterOrder._id,
                 status: "Pending",
+                changeOption,
+                change,
                 isPaid
             });
+
             childOrderIds.push(childOrder._id);
+
+            await Emiteventhandler("newOrder", childOrder);
         }
 
         masterOrder.childOrders = childOrderIds;
         await masterOrder.save();
-
-        await Emiteventhandler("newOrder", masterOrder); 
 
         return NextResponse.json({ success: true, masterOrderId: masterOrder._id }, { status: 200 });
 

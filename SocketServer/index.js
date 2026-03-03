@@ -67,22 +67,17 @@ io.on("connection", (socket) => {
 
 app.post("/notify" , (req , res)=>{
 
-   const { event, data } = req.body;
+   const { event, data , target } = req.body;
    
-   if (data && data.vendor) {
+    if (target) {
+        io.to(target).emit(event, data);
+    } else if (data && data.vendor) {
         io.to(data.vendor).emit(event, data);
-    } else if (Array.isArray(data) && data[0].vendor) {
-
-        data.forEach(order => {
-            io.to(order.vendor).emit(event, order);
-        });
-
     } else {
-
+       
         io.emit(event, data);
-
     }
-    
+
     return res.status(200).json({ success: true });
 })
 
