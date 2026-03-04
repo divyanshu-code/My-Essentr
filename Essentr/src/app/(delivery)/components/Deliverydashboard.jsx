@@ -99,6 +99,8 @@ const Deliverydashboard = ({ user }) => {
     const socket = getSocket();
     socket.on("new-assignments", (deliveryAssign) => {
 
+      console.log(deliveryAssign)
+
       setAssignments((prev) => {
 
         const isDuplicate = prev.some(item => item._id === deliveryAssign._id);
