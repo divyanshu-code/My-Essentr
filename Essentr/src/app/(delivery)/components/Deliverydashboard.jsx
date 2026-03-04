@@ -18,10 +18,20 @@ import { Slide } from 'react-toastify';
 
 const Deliverydashboard = ({ user }) => {
   const [error, setError] = useState(null);
-  const [isOnDuty, setIsOnDuty] = useState(false);
   const [address, setAddress] = useState("Detecting location...");
 
   const [assignments, setAssignments] = useState([]);
+
+  const [isOnDuty, setIsOnDuty] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('rider_status') === 'online';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('rider_status', isOnDuty ? 'online' : 'offline');
+  }, [isOnDuty]);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -80,26 +90,36 @@ const Deliverydashboard = ({ user }) => {
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const res = await fetch('/api/delivery/getassignment');
+        const res = await fetch('/api/delivery/getassignment', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
 
-        console.log(data)
-
-        setAssignments(Array.isArray(data) ? data : []);
+        setAssignments(data);
       } catch (error) {
         console.error("Fetch error:", error);
       }
     };
-    fetchAssignments();
-  }, []);
+
+    if (isOnDuty) {
+      fetchAssignments();
+    }
+  }, [isOnDuty]);
 
 
   useEffect(() => {
     const socket = getSocket();
+
+    if (user?._id) {
+      socket.emit("join", user._id);
+    }
+
     socket.on("new-assignments", (deliveryAssign) => {
 
-      console.log(deliveryAssign)
+      console.log("deliveryboy", deliveryAssign)
 
       setAssignments((prev) => {
 
@@ -116,7 +136,7 @@ const Deliverydashboard = ({ user }) => {
     return () => {
       socket.off("new-assignments");
     };
-  }, []);
+  }, [user?._id]);
 
   const childVars = {
     initial: { opacity: 0, y: 20 },
@@ -141,6 +161,7 @@ const Deliverydashboard = ({ user }) => {
 
       const data = await res.json();
 
+      setAssignments((prev) => prev.filter(item => item._id !== id));
     } catch (error) {
       console.error("Accept error:", error);
 
@@ -233,25 +254,52 @@ const Deliverydashboard = ({ user }) => {
                           </div>
                           <div className='flex flex-col'>
                             <div className='flex items-center gap-2'>
-                              <span className="text-xs font-black text-slate-900">Amount: ₹{order.currentOrderId?.totalamount}</span>
-                              <span className="text-xs font-black text-slate-900"> Customer payable amount: ₹{order.currentOrderId?.change?.customerGiveamt}</span>
-                              <span className="text-xs font-black text-slate-900" > {order.currentOrderId?.change?.deliveryReturnamt != 0 ? `Return amount: ₹${order.currentOrderId?.change?.deliveryReturnamt}` : null}</span>
+                              <span className="text-xs font-black text-slate-900">Amount: ₹{order?.masterOrderId?.totalAmount}</span>
+                              <span className="text-xs font-black text-slate-900"> Customer payable amount: ₹{order?.masterOrderId?.change?.customerGiveamt}</span>
+                              <span className="text-xs font-black text-slate-900" > {order?.masterOrderId?.change?.deliveryReturnamt != 0 ? `Return amount: ₹${order?.masterOrderId?.change?.deliveryReturnamt}` : null}</span>
                             </div>
-                            <span className="text-xs font-medium text-slate-500">Payment: {order.currentOrderId?.isPaid ? "Paid" : "Pending"}</span>
+                            <span className="text-xs font-medium text-slate-500">Payment: {order?.masterOrderId?.isPaid ? "Paid" : "Pending"}</span>
                           </div>
                         </div>
                         <span className="text-[10px] font-bold text-slate-400">2.5 KM</span>
                       </div>
 
-                      <div className="flex gap-4 mb-6">
-                        <div className="flex flex-col items-center gap-1 mt-1">
-                          <div className="w-2 h-2 rounded-full bg-slate-300" />
-                          <div className="w-[1px] h-4 bg-slate-200" />
-                          <div className="w-2 h-2 rounded-full bg-orange-500" />
+                      <div className="flex gap-4 mb-6 ml-3">
+                        
+                        <div className="flex flex-col mt-2 items-center py-1">
+                          
+                          <div className="w-2 h-2 rounded-full bg-slate-300 flex-shrink-0" />
+
+                          <div className="flex-1 w-[2px] bg-gradient-to-b from-slate-200 to-orange-200 my-1" />
+
+                          <div className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
                         </div>
-                        <div className="space-y-3.5">
-                          <p className="text-xs font-medium text-slate-500">Pickup: {order.currentOrderId?.vendor?.address || "Loading address..."}</p>
-                          <p className="text-xs font-bold text-slate-800">Drop: {order.currentOrderId?.shippingAddress?.address}</p>
+
+                        <div className="flex-1 space-y-4">
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tight">
+                              Pickups:
+                            </span>
+                            {order.masterOrderId?.childOrders?.map((child, idx) => (
+                              <div key={idx} className="flex items-start gap-2 w-96 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                                <div>
+                                  <p className="text-[10px] font-black text-slate-800 leading-none">
+                                    {child.vendor?.businessName || "Store"}
+                                  </p>
+                                  <p className="text-[10px] font-medium text-slate-500 mt-1 italic">
+                                    {child.vendor?.address || "Address not available"}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="pt-1">
+                            <p className="text-[10px] font-bold text-zinc-600">
+                              <span className="uppercase text-orange-600">Drop :</span> {order.masterOrderId?.shippingAddress?.address}
+                            </p>
+                          </div>
                         </div>
                       </div>
 

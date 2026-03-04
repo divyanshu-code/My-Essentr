@@ -1,40 +1,36 @@
-import { auth } from '@/auth';
-import connectDB from '@/Config/Db';
-import DeliveryassignModel from '@/Models/deliveryassignModel';
-import OrderModel from '@/Models/orderModel';
-import UserModel from '@/Models/userModel';
-import VendorModel from '@/Models/vendorModel';
-import { NextResponse } from 'next/server';
+import { auth } from "@/auth";
+import connectDB from "@/Config/Db";
+import DeliveryassignModel from "@/Models/deliveryassignModel";
+import { NextResponse } from "next/server";
 
-export async function GET(request) {
+export async function GET(req) {
+    try {
+        
+        await connectDB()
+        const session = await auth() 
+        const riderId = session?.user?.id;
 
-  try {
-   
-    await connectDB()
+        const assignments = await DeliveryassignModel.find({
+            status: "broadcasted",
+            broadCastedTo: { $in: [riderId] } 
+        })
+        .populate({
+            path: 'masterOrderId',
+            populate: {
+                path: 'childOrders',
+                model: 'Order',
+                populate: {
+                    path: 'vendor',
+                    model: 'Vendor',
+                    foreignField: 'userId',
+                    localField: 'vendor',
+                }
+            }
+        })
+        .sort({ createdAt: -1 });
 
-    const session = await auth();
-
-    if(!session){
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json(assignments);
+    } catch (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    const assignments = await DeliveryassignModel.find({
-       broadCastedTo : session?.user?.id,
-    }).populate({
-        path: 'currentOrderId',
-        populate: {
-            path: 'vendor',    // Order model mein jo vendor field hai (User ID)
-            model: 'Vendor',   // Force Mongoose to look into Vendor collection
-            foreignField: 'userId', // Vendor collection mein 'userId' field se match karo
-            localField: 'vendor'    // Order collection ki 'vendor' ID se
-        }
-    })
-    .populate("vendorId");
-
-    return NextResponse.json(assignments, { status: 200 });
-  } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
-  }
 }
-

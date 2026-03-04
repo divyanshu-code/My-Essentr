@@ -102,8 +102,17 @@ export async function POST(request, { params }) {
             const populatedAssign = await DeliveryassignModel.findById(deliveryAssign._id)
                 .populate({
                     path: 'masterOrderId',
-                    populate: { path: 'childOrders' }
-                });
+                    populate: {
+                        path: 'childOrders',
+                        model: 'Order',
+                        populate: {
+                            path: 'vendor',
+                            model: 'Vendor',
+                            foreignField: 'userId',
+                            localField: 'vendor',
+                        }
+                    }
+                }).populate('vendorId');
 
             for (const boyId of candidates) {
                 const boy = await UserModel.findById(boyId)
@@ -119,14 +128,14 @@ export async function POST(request, { params }) {
                 latitude: b.location.coordinates[1],
                 longitude: b.location.coordinates[0],
             }));
-        } 
+        }
 
         childorder.status = status;
 
         if (masterOrder.assigned) {
             childorder.assigned = masterOrder.assigned;
         }
-        
+
         await childorder.save();
 
         await Emiteventhandler("order_status_updated", {

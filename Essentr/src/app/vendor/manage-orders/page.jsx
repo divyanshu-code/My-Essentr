@@ -17,6 +17,7 @@ const ManageOrders = () => {
     const [expanded, setexpanded] = useState(null)
 
     const userdata = useSelector((state) => state.user.userData);
+    const deliveryfee = useSelector((state) => state.cart.deliveryFee);
 
     const statusColors = {
         Pending: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
@@ -248,7 +249,7 @@ const ManageOrders = () => {
                                                     </td>
 
                                                     <td className="px-8 py-6">
-                                                        <div className="text-emerald-400 font-black">₹{order?.totalamount}</div>
+                                                        <div className="text-emerald-400 font-black">₹{order?.totalamount + deliveryfee}</div>
                                                     </td>
 
                                                     <td className="px-5 py-5">
