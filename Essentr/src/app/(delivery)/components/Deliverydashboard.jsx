@@ -281,7 +281,7 @@ const Deliverydashboard = ({ user }) => {
                               Pickups:
                             </span>
                             {order.masterOrderId?.childOrders?.map((child, idx) => (
-                              <div key={idx} className="flex items-start gap-2 w-96 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                              <div key={idx} className="flex items-start gap-2 w-96 bg-slate-100 p-2 rounded-lg border border-slate-100">
                                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
                                 <div>
                                   <p className="text-[10px] font-black text-slate-800 leading-none">

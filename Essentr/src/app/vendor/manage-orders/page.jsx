@@ -17,7 +17,6 @@ const ManageOrders = () => {
     const [expanded, setexpanded] = useState(null)
 
     const userdata = useSelector((state) => state.user.userData);
-    const deliveryfee = useSelector((state) => state.cart.deliveryFee);
 
     const statusColors = {
         Pending: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
@@ -103,6 +102,8 @@ const ManageOrders = () => {
 
                 const allorder = await response.json()
 
+                console.log(allorder)
+
                 setOrders(allorder)
 
             } catch (error) {
@@ -125,12 +126,19 @@ const ManageOrders = () => {
         }
 
         socket?.on("newOrder", (data) => {
-
             setOrders((prev) => {
-
                 const exists = prev.find(o => o._id === data._id);
                 if (exists) return prev;
-                return [data, ...prev];
+
+                let processedData = { ...data };
+                if (data.masterOrderId?.childOrders) {
+                    const totalSub = data.masterOrderId.childOrders.reduce((s, c) => s + c.totalamount, 0);
+                    const fee = data.masterOrderId.totalAmount - totalSub;
+                    const ratio = data.totalamount / totalSub;
+                    processedData.vendorPayable = data.totalamount + (ratio * fee);
+                }
+
+                return [processedData, ...prev];
             });
         })
 
@@ -189,7 +197,7 @@ const ManageOrders = () => {
                                 transition={{ delay: i * 0.1 }}
                                 className="bg-zinc-900/50 border border-white/5 p-6 rounded-lg relative overflow-hidden group"
                             >
-                                <stat.icon className={`absolute -right-3 -bottom-4 text-7xl opacity-5 group-hover:scale-110 transition-transform duration-500 ${stat.color}`} />
+                                <stat.icon className={`absolute -right-3 -bottom-4 text-7xl opacity-10 group-hover:scale-110 transition-transform duration-500 ${stat.color}`} />
                                 <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">{stat.label}</p>
                                 <h3 className="text-2xl font-black">{stat.value}</h3>
                             </motion.div>
@@ -234,12 +242,16 @@ const ManageOrders = () => {
                                                     <td className="px-5 py-5">
                                                         <div className="font-black text-white"># {order?._id?.toString()?.slice(-6)}</div>
                                                         <div className="text-zinc-500 text-[10px] font-bold uppercase">{new Date(order.createdAt).toLocaleString()}</div>
-                                                        <div className="text-zinc-400 text-[10px] font-bold mt-3 uppercase">{order.shippingAddress?.address}</div>
-                                                        <div className='text-zinc-400 text-[10px] font-bold uppercase'>{order.shippingAddress?.mobile}</div>
-                                                        <div className='text-zinc-400 text-[10px] font-bold uppercase'>
-                                                            <p>{order?.paymentMethod}</p>
+                                                        <div className="text-zinc-400 text-[10px] leading-tight font-bold mt-3 uppercase">{order.shippingAddress?.address}</div>
+                                                        <div className='leading-tight mb-2 mt-2'>
+                                                            <div className='text-zinc-300  text-[10px] font-bold uppercase'>Phone: {order.shippingAddress?.mobile}</div>
+                                                            <p className='text-zinc-300 text-[10px] font-bold uppercase '>Total Products Amount: {order?.totalamount}</p>
+                                                            <p className='text-zinc-300 text-[10px] font-bold uppercase'>Delivery Charge: {order?.deliverycharge?.toFixed(2)}</p>
+                                                        </div>
+                                                        <div className='text-blue-400 text-[10px] leading-tight font-bold uppercase'>
                                                             <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Needchange: ${order?.change.customerGiveamt}` : null}</p>
                                                             <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change.deliveryReturnamt}` : null}</p>
+                                                            <p>{order?.paymentMethod === 'cod' ? "cod" : 'online'}</p>
                                                         </div>
                                                     </td>
 
@@ -249,10 +261,13 @@ const ManageOrders = () => {
                                                     </td>
 
                                                     <td className="px-8 py-6">
-                                                        <div className="text-emerald-400 font-black">₹{order?.totalamount + deliveryfee}</div>
+                                                        <div className="text-emerald-400 font-black">
+                                                            ₹{order?.vendorPayable ? order.vendorPayable.toFixed(2) : (order?.totalamount || 0)}
+                                                        </div>
+                                                        {(order?.change.deliveryReturnamt + order?.vendorPayable) != order?.change.customerGiveamt ? <p className="text-[8px] font-medium leading-tight text-zinc-500 uppercase">Incl. Split Delivery Fees</p> : <p className="text-[8px] font-medium leading-tight text-zinc-500 uppercase">Incl. Delivery Fees</p>}
                                                     </td>
 
-                                                    <td className="px-5 py-5">
+                                                    <td className="px-1 py-5">
                                                         <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${statusColors[order.status]}`}>
                                                             {order.status}
                                                         </span>

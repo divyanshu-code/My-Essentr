@@ -62,7 +62,7 @@ const GroceryItemCard = ({ item }) => {
         </div>
 
         <div className="mt-3 px-2 pb-2">
-          <div className="flex justify-between items-center mb-1 ">
+          <div className="flex justify-between items-center ">
             <h3 className="text-[16px] font-black text-gray-900 tracking-tight leading-tight group-hover:text-green-600 transition-colors">
               {item.name}
             </h3>
@@ -73,11 +73,11 @@ const GroceryItemCard = ({ item }) => {
             </div>
           </div>
 
-          <div className='flex items-center '>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+          <div className='flex items-center mb-4'>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ">
               {item.unit || '1 unit'}
             </p>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest mb-4">
+            <p className="text-[10px] font-bold text-gray-400 tracking-widest ">
               {item.unit1 || '1 unit'}
             </p>
           </div>

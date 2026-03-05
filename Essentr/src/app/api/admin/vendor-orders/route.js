@@ -15,14 +15,35 @@ export async function GET(req) {
 
     const vendorId = session.user.id;    
 
-    const orders = await OrderModel.find({
-      vendor: vendorId 
-    })
-    .sort({ createdAt: -1 }) 
-    .populate('user assignedDeliverypartner'); 
+    const orders = await OrderModel.find({ vendor: vendorId })
+      .sort({ createdAt: -1 }) 
+      .populate('user assignedDeliverypartner')
+      .populate({
+        path: 'parentOrder',
+        populate: { path: 'childOrders' } 
+      });
 
-    return NextResponse.json(orders, { status: 200 });
+    const processedOrders = orders.map(order => {
+      const orderObj = order.toObject();
+      const master = orderObj.parentOrder;
 
+      if (master && master.childOrders) {
+        const totalProductSubtotal = master.childOrders.reduce((sum, child) => sum + child.totalamount, 0);
+        
+        const totalDeliveryFee = master.totalAmount - totalProductSubtotal;
+
+        const ratio = orderObj.totalamount / totalProductSubtotal;
+        const vendorDeliveryShare = ratio * totalDeliveryFee;
+
+        orderObj.deliverycharge = vendorDeliveryShare;
+        orderObj.vendorPayable = orderObj.totalamount + vendorDeliveryShare;
+      } else {
+        orderObj.vendorPayable = orderObj.totalamount;
+      }
+      return orderObj;
+    });
+
+    return NextResponse.json(processedOrders, { status: 200 });
   } catch (error) {
     console.error("Vendor Order API Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
