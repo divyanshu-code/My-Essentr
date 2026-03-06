@@ -102,13 +102,10 @@ const ManageOrders = () => {
 
                 const allorder = await response.json()
 
-                console.log(allorder)
-
                 setOrders(allorder)
 
             } catch (error) {
                 console.log(error);
-
             }
         }
 
@@ -116,6 +113,8 @@ const ManageOrders = () => {
     }, [])
 
     useEffect(() => {
+
+        if (!userdata?._id) return;
 
         const socket = getSocket()
 
@@ -126,17 +125,30 @@ const ManageOrders = () => {
         }
 
         socket?.on("newOrder", (data) => {
+
+            console.log(data)
             setOrders((prev) => {
                 const exists = prev.find(o => o._id === data._id);
                 if (exists) return prev;
 
                 let processedData = { ...data };
-                if (data.masterOrderId?.childOrders) {
-                    const totalSub = data.masterOrderId.childOrders.reduce((s, c) => s + c.totalamount, 0);
-                    const fee = data.masterOrderId.totalAmount - totalSub;
-                    const ratio = data.totalamount / totalSub;
-                    processedData.vendorPayable = data.totalamount + (ratio * fee);
-                }
+                if (data.parentOrder && typeof data.parentOrder === 'object' && data.parentOrder?.childOrders) {
+
+                    const master = data.parentOrder;
+
+                    const totalProductSubtotal = master.childOrders.reduce((sum, child) => sum + child.totalamount, 0);
+                    const totalDeliveryFee = (master.totalAmount || 0) - totalProductSubtotal;
+
+                    const ratio = data.totalamount / totalProductSubtotal;
+                    const vendorDeliveryShare = ratio * totalDeliveryFee;
+
+                    processedData.deliverycharge = vendorDeliveryShare;
+                    processedData.vendorPayable = data.totalamount + vendorDeliveryShare;
+                }else {
+                
+                processedData.deliverycharge = 0;
+                processedData.vendorPayable = data.totalamount;
+            }
 
                 return [processedData, ...prev];
             });
@@ -145,7 +157,7 @@ const ManageOrders = () => {
         return () => {
             socket.off("newOrder");
         }
-    }, [])
+    }, [userdata?._id])
 
     return (
         <div className="h-182 w-full bg-[#0A0A0B] text-white flex flex-col overflow-hidden font-sans">

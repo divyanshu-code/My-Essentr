@@ -22,6 +22,7 @@ export async function POST(request) {
         });
 
         const childOrderIds = [];
+        const createdOrders = [];
 
         for (const vendorId in items) {
             const vendorItems = items[vendorId];
@@ -42,12 +43,24 @@ export async function POST(request) {
             });
 
             childOrderIds.push(childOrder._id);
+            createdOrders.push(childOrder);
 
-            await Emiteventhandler("newOrder", childOrder);
         }
 
         masterOrder.childOrders = childOrderIds;
         await masterOrder.save();
+
+        for (const order of createdOrders) {
+            
+            const populatedOrder = await OrderModel.findById(order._id)
+                .populate('user')
+                .populate({
+                    path: 'parentOrder',
+                    populate: { path: 'childOrders' } 
+                });
+
+            await Emiteventhandler("newOrder", populatedOrder);
+        }
 
         return NextResponse.json({ success: true, masterOrderId: masterOrder._id }, { status: 200 });
 

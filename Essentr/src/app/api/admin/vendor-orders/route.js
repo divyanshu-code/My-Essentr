@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/Config/Db';
 import { auth } from '@/auth';
 import OrderModel from '@/Models/orderModel';
+import MasterOrderModel from '@/Models/masterModel';
 
 export async function GET(req) {
   try {
@@ -35,7 +36,7 @@ export async function GET(req) {
         const ratio = orderObj.totalamount / totalProductSubtotal;
         const vendorDeliveryShare = ratio * totalDeliveryFee;
 
-        orderObj.deliverycharge = vendorDeliveryShare;
+        orderObj.deliverycharge = vendorDeliveryShare ;
         orderObj.vendorPayable = orderObj.totalamount + vendorDeliveryShare;
       } else {
         orderObj.vendorPayable = orderObj.totalamount;

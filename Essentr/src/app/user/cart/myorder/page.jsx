@@ -149,9 +149,9 @@ const MyOrders = () => {
                                     </div>
 
                                     <div className='mt-10 mb-2 flex items-center justify-between'>
-                                        <div className='flex items-center justify-center gap-1'>
-                                            <MdLocationOn size={13} />
-                                            <p className="text-zinc-400 text-sm font-medium">{order?.shippingAddress?.address}</p>
+                                        <div className='flex gap-1 w-180'>
+                                            <MdLocationOn className='mt-0.5' size={15} />
+                                            <p className="text-zinc-400 text-xs leading-tight font-medium">{order?.shippingAddress?.address}</p>
                                         </div>
 
                                         <div className="text-zinc-400 text-sm mr-1 font-medium uppercase" >
@@ -232,7 +232,6 @@ const MyOrders = () => {
                                                         ))}
 
                                                     </div>
-
                                                 </motion.div>
                                             </div>
                                         </div>
