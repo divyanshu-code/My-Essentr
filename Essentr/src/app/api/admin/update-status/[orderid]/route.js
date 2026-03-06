@@ -42,107 +42,123 @@ export async function POST(request, { params }) {
         if (status == "Out for delivery" && !childorder.assigned) {
 
             const existingAssignment = await DeliveryassignModel.findOne({ masterOrderId: masterOrder._id });
+
             if (existingAssignment) {
-                return NextResponse.json({ message: "Assignment already exists" }, { status: 200 });
-            }
+                childorder.assigned = existingAssignment._id;
+                masterOrder.assigned = existingAssignment._id;
 
-            const { latitude, longitude } = masterOrder.shippingAddress;
-
-            const nearestDeliveryPartner = await UserModel.find({
-                role: "delivery",
-                location: {
-                    $near: {
-                        $geometry: {
-                            type: "Point",
-                            coordinates: [Number(longitude), Number(latitude)]
-                        },
-                        $maxDistance: 10000   // 10 km 
+                await DeliveryassignModel.findByIdAndUpdate(existingAssignment._id, {
+                    $addToSet: {
+                        childOrderIds: childorder._id,
+                        vendorIds: childorder.vendor?._id || childorder?.vendor
                     }
-                }
-            })
+                });
+            } else {
 
-            const nearByDeliveryPartner = nearestDeliveryPartner.map((b) => b._id.toString())
-            const busyIds = await DeliveryassignModel.find({
+                const { latitude, longitude } = masterOrder.shippingAddress;
 
-                assignCastedTo: { $in: nearByDeliveryPartner },      // it will check nearByDeliveryPartner is assined or not.
-                status: { $nin: ["broadcasted", "completed"] }
-
-            }).distinct("assignCastedTo")
-
-            // whole busyIds is array of delivery partner ids who are busy
-
-            const busyIdSet = new Set(busyIds.map(id => id.toString()))
-
-            const availableDeliveryPartnerObjects = nearestDeliveryPartner.filter((partner) =>
-                !busyIdSet.has(partner._id.toString())
-            );
-
-            const candidates = availableDeliveryPartnerObjects.map((b) => b._id)
-
-            if (candidates.length === 0) {
-                await childorder.save();
-
-                return NextResponse.json(
-                    { error: 'No available delivery partners found' },
-                    { status: 400 }
-                );
-            }
-
-            const deliveryAssign = await DeliveryassignModel.create({
-                masterOrderId: masterOrder._id,
-                currentOrderId: childorder._id,
-                broadCastedTo: candidates,
-                status: "broadcasted",
-                vendorId: childorder.vendor?._id || childorder?.vendor,
-            });
-
-            masterOrder.assigned = deliveryAssign._id;
-            await masterOrder.save();
-
-            const populatedAssign = await DeliveryassignModel.findById(deliveryAssign._id)
-                .populate({
-                    path: 'masterOrderId',
-                    populate: {
-                        path: 'childOrders',
-                        model: 'Order',
-                        populate: {
-                            path: 'vendor',
-                            model: 'Vendor',
-                            foreignField: 'userId',
-                            localField: 'vendor',
+                const nearestDeliveryPartner = await UserModel.find({
+                    role: "delivery",
+                    location: {
+                        $near: {
+                            $geometry: {
+                                type: "Point",
+                                coordinates: [Number(longitude), Number(latitude)]
+                            },
+                            $maxDistance: 10000   // 10 km 
                         }
                     }
-                }).populate('vendorId');
+                })
 
-            for (const boyId of candidates) {
-                const boy = await UserModel.findById(boyId)
-                if (boy?.socketId) {
-                    await Emiteventhandler("new-assignments", populatedAssign, boy.socketId)
+                const nearByDeliveryPartner = nearestDeliveryPartner.map((b) => b._id.toString())
+                const busyIds = await DeliveryassignModel.find({
+
+                    assignCastedTo: { $in: nearByDeliveryPartner },      // it will check nearByDeliveryPartner is assined or not.
+                    status: { $nin: ["broadcasted", "completed"] }
+
+                }).distinct("assignCastedTo")
+
+                // whole busyIds is array of delivery partner ids who are busy
+
+                const busyIdSet = new Set(busyIds.map(id => id.toString()))
+
+                const availableDeliveryPartnerObjects = nearestDeliveryPartner.filter((partner) =>
+                    !busyIdSet.has(partner._id.toString())
+                );
+
+                const candidates = availableDeliveryPartnerObjects.map((b) => b._id)
+
+                if (candidates.length === 0) {
+                    await childorder.save();
+
+                    return NextResponse.json(
+                        { error: 'No available delivery partners found' },
+                        { status: 400 }
+                    );
                 }
-            }
 
-            deliverypartner = availableDeliveryPartnerObjects.map(b => ({
-                id: b._id,
-                name: b.name,
-                mobile: b.mobile,
-                latitude: b.location.coordinates[1],
-                longitude: b.location.coordinates[0],
-            }));
+                const deliveryAssign = await DeliveryassignModel.create({
+                    masterOrderId: masterOrder._id,
+                    currentOrderId: childorder._id,
+                    broadCastedTo: candidates,
+                    status: "broadcasted",
+                    vendorId: childorder.vendor?._id || childorder?.vendor,
+                });
+
+                masterOrder.assigned = deliveryAssign._id;
+                childorder.assigned = deliveryAssign._id;
+                await masterOrder.save();
+
+                const populatedAssign = await DeliveryassignModel.findById(deliveryAssign._id)
+                    .populate({
+                        path: 'masterOrderId',
+                        populate: {
+                            path: 'childOrders',
+                            model: 'Order',
+                            populate: {
+                                path: 'vendor',
+                                model: 'Vendor',
+                                foreignField: 'userId',
+                                localField: 'vendor',
+                            }
+                        }
+                    }).populate('vendorId');
+
+                for (const boyId of candidates) {
+                    const boy = await UserModel.findById(boyId)
+                    if (boy?.socketId) {
+                        await Emiteventhandler("new-assignments", populatedAssign, boy.socketId)
+                    }
+                }
+
+                deliverypartner = availableDeliveryPartnerObjects.map(b => ({
+                    id: b._id,
+                    name: b.name,
+                    mobile: b.mobile,
+                    latitude: b.location.coordinates[1],
+                    longitude: b.location.coordinates[0],
+                }));
+
+            }
         }
 
         childorder.status = status;
+        await childorder.save();
 
         if (masterOrder.assigned) {
             childorder.assigned = masterOrder.assigned;
         }
-
-        await childorder.save();
 
         await Emiteventhandler("order_status_updated", {
             orderId: childorder._id,
             masterId: masterOrder._id,
             status: childorder.status,
         })
+
+        await Emiteventhandler("vendorOrderReady", {
+            childOrderId: childorder._id,
+            status: childorder.status
+        });
 
         return NextResponse.json({
             success: true,

@@ -22,16 +22,22 @@ const Deliverydashboard = ({ user }) => {
 
   const [assignments, setAssignments] = useState([]);
 
-  const [isOnDuty, setIsOnDuty] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('rider_status') === 'online';
-    }
-    return false;
-  });
+  const [isOnDuty, setIsOnDuty] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+
+    const savedStatus = localStorage.getItem('rider_status');
+    if (savedStatus === 'online') {
+      setIsOnDuty(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
     localStorage.setItem('rider_status', isOnDuty ? 'online' : 'offline');
-  }, [isOnDuty]);
+  }, [isOnDuty, isMounted]);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -133,8 +139,31 @@ const Deliverydashboard = ({ user }) => {
       });
     });
 
+    socket.on("vendorOrderReady", ({ childOrderId, status }) => {
+      setAssignments((prev) =>
+        prev.map((assignment) => {
+
+          const updatedChildOrders = assignment.masterOrderId?.childOrders?.map((child) => {
+            if (child._id === childOrderId) {
+              return { ...child, status: status };
+            }
+            return child;
+          });
+
+          return {
+            ...assignment,
+            masterOrderId: {
+              ...assignment.masterOrderId,
+              childOrders: updatedChildOrders
+            }
+          };
+        })
+      );
+    });
+
     return () => {
       socket.off("new-assignments");
+      socket.off("vendorOrderReady");
     };
   }, [user?._id]);
 
@@ -265,9 +294,9 @@ const Deliverydashboard = ({ user }) => {
                       </div>
 
                       <div className="flex gap-4 mb-6 ml-3">
-                        
+
                         <div className="flex flex-col mt-2 items-center py-1">
-                          
+
                           <div className="w-2 h-2 rounded-full bg-slate-300 flex-shrink-0" />
 
                           <div className="flex-1 w-[2px] bg-gradient-to-b from-slate-200 to-orange-200 my-1" />
@@ -280,19 +309,49 @@ const Deliverydashboard = ({ user }) => {
                             <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tight">
                               Pickups:
                             </span>
-                            {order.masterOrderId?.childOrders?.map((child, idx) => (
-                              <div key={idx} className="flex items-start gap-2 w-96 bg-slate-100 p-2 rounded-lg border border-slate-100">
-                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-                                <div>
-                                  <p className="text-[10px] font-black text-slate-800 leading-none">
-                                    {child.vendor?.businessName || "Store"}
-                                  </p>
-                                  <p className="text-[10px] font-medium text-slate-500 mt-1 italic">
-                                    {child.vendor?.address || "Address not available"}
-                                  </p>
+                            {order.masterOrderId?.childOrders?.map((child, idx) => {
+
+                              const isReady = child.status === 'Out for delivery' || child.status === 'Delivered';
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`flex items-start gap-3 w-96 p-2 rounded-lg border transition-all duration-300 ${isReady ? 'bg-green-50 border-green-200' : 'bg-slate-100 border-slate-100'
+                                    }`}
+                                >
+                                  <div className="mt-2 flex-shrink-0">
+                                    {isReady ? (
+                                      <div className="bg-green-500 rounded-full p-0.5 shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-2 w-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      </div>
+                                    ) : (
+                                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                    )}
+                                  </div>
+
+                                  <div className='flex items-center justify-center'>
+                                    <div className='flex flex-col'>
+                                      <div className="flex items-end gap-2">
+                                        <p className={`text-[10px] font-black leading-none ${isReady ? 'text-green-800' : 'text-slate-800'}`}>
+                                          {child.vendor?.businessName || "Store"}
+                                        </p>
+                                      {isReady && (
+                                        <span className="text-[7px] font-bold  text-green-600 uppercase bg-green-200 px-1  rounded-[4px]">
+                                          Ready for Pickup
+                                        </span>
+                                      )}
+                                      </div>
+                                      <p className={`text-[10px] font-medium mt-1 italic ${isReady ? 'text-green-600/70' : 'text-slate-500'}`}>
+                                        {child.vendor?.address || "Address not available"}
+                                      </p>
+                                    </div>
+                                    
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
 
                           <div className="pt-1">
