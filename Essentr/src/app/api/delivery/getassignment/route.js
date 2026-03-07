@@ -1,11 +1,14 @@
 import { auth } from "@/auth";
 import connectDB from "@/Config/Db";
 import DeliveryassignModel from "@/Models/deliveryassignModel";
+import MasterOrderModel from "@/Models/masterModel";
+import OrderModel from "@/Models/orderModel";
+import VendorModel from "@/Models/vendorModel";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
     try {
-        
+
         await connectDB()
         const session = await auth() 
         const riderId = session?.user?.id;
@@ -16,6 +19,7 @@ export async function GET(req) {
         })
         .populate({
             path: 'masterOrderId',
+            model: 'MasterOrder',
             populate: {
                 path: 'childOrders',
                 model: 'Order',

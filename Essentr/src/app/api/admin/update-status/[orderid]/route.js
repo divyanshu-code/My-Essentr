@@ -47,12 +47,6 @@ export async function POST(request, { params }) {
                 childorder.assigned = existingAssignment._id;
                 masterOrder.assigned = existingAssignment._id;
 
-                await DeliveryassignModel.findByIdAndUpdate(existingAssignment._id, {
-                    $addToSet: {
-                        childOrderIds: childorder._id,
-                        vendorIds: childorder.vendor?._id || childorder?.vendor
-                    }
-                });
             } else {
 
                 const { latitude, longitude } = masterOrder.shippingAddress;

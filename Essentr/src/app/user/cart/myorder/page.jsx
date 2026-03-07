@@ -160,22 +160,27 @@ const MyOrders = () => {
                                     </div>
 
                                     {order.assignedDeliverypartner &&
-                                        <div className='border py-2  px-4 border-zinc-400/20 rounded-lg  w-98'>
-                                            <div className='flex items-center gap-50 '>
-                                                <div>
-                                                    <div className='flex items-center gap-2 '>
-                                                        <UserCheck size={15} />
-                                                        <p className='text-white text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
+                                        <div className='flex items-center gap-5'>
+                                            <div className='border py-2  px-4 border-zinc-400/20 rounded-lg  w-98'>
+                                                <div className='flex items-center gap-50 '>
+                                                    <div>
+                                                        <div className='flex items-center gap-2 '>
+                                                            <UserCheck size={15} />
+                                                            <p className='text-white text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
+                                                        </div>
+                                                        <div className='flex items-center gap-2 mt-1 '>
+                                                            <PhoneCall size={14} />
+                                                            <p className='text-white text-[12px] font-bold '>{order.assignedDeliverypartner.mobile}</p>
+                                                        </div>
                                                     </div>
-                                                    <div className='flex items-center gap-2 mt-1 '>
-                                                        <PhoneCall size={14} />
-                                                        <p className='text-white text-[12px] font-bold '>{order.assignedDeliverypartner.mobile}</p>
+                                                    <div>
+                                                        <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/5 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Call</a>
                                                     </div>
-                                                </div>
-                                                <div>
-                                                    <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/10 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Call</a>
                                                 </div>
                                             </div>
+                                            <button className='text-green-500 bg-green-500/5 text-[12px] px-5 py-1 rounded-md border border-green-500/20 font-black tracking-widest' >
+                                                Track order
+                                            </button>
                                         </div>
                                     }
                                     <div className=" pt-3 mt-5 border-t border-white/5 flex items-center justify-between">
