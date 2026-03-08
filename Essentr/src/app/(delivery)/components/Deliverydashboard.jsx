@@ -15,15 +15,21 @@ import axios from 'axios';
 import { getSocket } from '@/Config/socket';
 import { toast } from 'react-toastify';
 import { Slide } from 'react-toastify';
+import { useSelector } from 'react-redux';
 
 const Deliverydashboard = ({ user }) => {
+
   const [error, setError] = useState(null);
   const [address, setAddress] = useState("Detecting location...");
+
+  const userdata = useSelector((state) => state.user);
 
   const [assignments, setAssignments] = useState([]);
 
   const [isOnDuty, setIsOnDuty] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [activeOrder, setActiveOrder] = useState();
+  const [location, setLocation] = useState();
 
   useEffect(() => {
     setIsMounted(true);
@@ -167,6 +173,41 @@ const Deliverydashboard = ({ user }) => {
     };
   }, [user?._id]);
 
+  const fetchcurrentorder = async ()=>{
+     
+     try{
+
+       const result = await fetch('/api/delivery/currentorderassign' , {
+           method : 'GET',
+           headers : {
+               'Content-Type' : 'application/json'
+           }
+       })
+
+       if(!result.ok) throw new Error("Failed to fetch current order")
+
+       const data = await result.json()
+
+       console.log(data)
+
+       if(data.active){
+           setActiveOrder(data.data)
+
+           setLocation({
+             latitude :  data.currentOrderId?.shippingAddress?.latitude,
+             longitude :  data.currentOrderId?.shippingAddress?.longitude,
+           })
+       }
+
+     }catch(error){
+         console.log(error)
+     }
+  }
+
+  useEffect(() => {
+    fetchcurrentorder()
+  }, [userdata])
+
   const childVars = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
@@ -207,6 +248,15 @@ const Deliverydashboard = ({ user }) => {
       });
 
     }
+  }
+
+  if(activeOrder && location) {
+      return (
+          <div>
+            <Navbar user={user}/>
+           
+          </div>
+      )
   }
 
   return (

@@ -13,13 +13,18 @@ export async function GET(){
     
         const deliveryboyId = session?.user?.id 
 
-        const activeassignment = await DeliveryassignModel.findOne({assignCastedTo : deliveryboyId, status: "assigned"}).populate( {
-             path: "currentOrderId",
-             populate: {
-                path: "address",
-             }
-        }).lean()
-
+        const activeassignment = await DeliveryassignModel.findOne({assignCastedTo : deliveryboyId, status: "assigned"}).populate({
+            path: "currentOrderId",
+            populate: {
+                path: "vendor", 
+                model: 'Vendor',
+                foreignField: 'userId',
+                localField: 'vendor',
+            }
+        })
+        .populate("masterOrderId") 
+        .lean();
+  
         if(!activeassignment){
             return NextResponse.json({active: false}, {status: 200})
         }
