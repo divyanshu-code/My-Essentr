@@ -16,6 +16,7 @@ import { getSocket } from '@/Config/socket';
 import { toast } from 'react-toastify';
 import { Slide } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import Activedashboard from './Activedashboard';
 
 const Deliverydashboard = ({ user }) => {
 
@@ -173,35 +174,33 @@ const Deliverydashboard = ({ user }) => {
     };
   }, [user?._id]);
 
-  const fetchcurrentorder = async ()=>{
-     
-     try{
+  const fetchcurrentorder = async () => {
 
-       const result = await fetch('/api/delivery/currentorderassign' , {
-           method : 'GET',
-           headers : {
-               'Content-Type' : 'application/json'
-           }
-       })
+    try {
 
-       if(!result.ok) throw new Error("Failed to fetch current order")
+      const result = await fetch('/api/delivery/currentorderassign', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
-       const data = await result.json()
+      if (!result.ok) throw new Error("Failed to fetch current order")
 
-       console.log(data)
+      const data = await result.json()
 
-       if(data.active){
-           setActiveOrder(data.data)
+      if (data.active) {
+        setActiveOrder(data.data)
 
-           setLocation({
-             latitude :  data.currentOrderId?.shippingAddress?.latitude,
-             longitude :  data.currentOrderId?.shippingAddress?.longitude,
-           })
-       }
+        setLocation({
+          latitude: data.currentOrderId?.shippingAddress?.latitude,
+          longitude: data.currentOrderId?.shippingAddress?.longitude,
+        })
+      }
 
-     }catch(error){
-         console.log(error)
-     }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   useEffect(() => {
@@ -250,13 +249,12 @@ const Deliverydashboard = ({ user }) => {
     }
   }
 
-  if(activeOrder && location) {
-      return (
-          <div>
-            <Navbar user={user}/>
-           
-          </div>
-      )
+  if (activeOrder && location) {
+    return (
+      <div>
+          <Activedashboard activeOrder={activeOrder} location={location} />
+      </div>
+    )
   }
 
   return (
@@ -387,17 +385,17 @@ const Deliverydashboard = ({ user }) => {
                                         <p className={`text-[10px] font-black leading-none ${isReady ? 'text-green-800' : 'text-slate-800'}`}>
                                           {child.vendor?.businessName || "Store"}
                                         </p>
-                                      {isReady && (
-                                        <span className="text-[7px] font-bold  text-green-600 uppercase bg-green-200 px-1  rounded-[4px]">
-                                          Ready for Pickup
-                                        </span>
-                                      )}
+                                        {isReady && (
+                                          <span className="text-[7px] font-bold  text-green-600 uppercase bg-green-200 px-1  rounded-[4px]">
+                                            Ready for Pickup
+                                          </span>
+                                        )}
                                       </div>
                                       <p className={`text-[10px] font-medium mt-1 italic ${isReady ? 'text-green-600/70' : 'text-slate-500'}`}>
                                         {child.vendor?.address || "Address not available"}
                                       </p>
                                     </div>
-                                    
+
                                   </div>
                                 </div>
                               );
