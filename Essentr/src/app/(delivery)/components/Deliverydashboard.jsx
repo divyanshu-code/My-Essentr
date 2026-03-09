@@ -31,6 +31,7 @@ const Deliverydashboard = ({ user }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [activeOrder, setActiveOrder] = useState();
   const [location, setLocation] = useState();
+  const [deliverylocation , setdeliverylocation ] = useState();
 
   useEffect(() => {
     setIsMounted(true);
@@ -248,6 +249,29 @@ const Deliverydashboard = ({ user }) => {
 
     }
   }
+
+  useEffect(() => {
+  
+          if (!userdata._id) return
+          if (!navigator.geolocation) return
+  
+          const socket = getSocket();
+          socket.emit("userId", userdata?._id);
+  
+          const location = navigator.geolocation.watchPosition((position) => {
+              const { latitude, longitude } = position.coords;
+  
+              socket.emit("updateLocation", { userId : userdata?._id, latitude, longitude })
+  
+          }, (error) => {
+              console.log(error)
+          }, { enableHighAccuracy: true })
+  
+          return () => {
+              navigator.geolocation.clearWatch(location)
+          }
+  
+      }, [userdata?._id])
 
   if (activeOrder && location) {
     return (

@@ -24,7 +24,7 @@ const Activedashboard = ({ activeOrder, location }) => {
     return (
         <div className="fixed inset-0 bg-slate-200 overflow-hidden flex flex-col">
 
-            <Livemapping/>
+            <Livemapping />
 
             <m.div
                 variants={sheetVariants}
@@ -48,7 +48,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                 {step === 'pickup' ? 'Pickup from Vendor' : 'Deliver to Customer'}
                             </h2>
                             <p className="text-slate-500 text-xs flex items-center gap-1">
-                                <MapPin size={14} /> {activeOrder?.currentOrderId?.shippingAddress?.address}
+                                <MapPin size={12} /> {activeOrder?.currentOrderId?.vendor?.address}
                             </p>
                         </div>
                         <div className="flex gap-2">
