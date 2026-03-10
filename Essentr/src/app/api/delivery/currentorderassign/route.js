@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import connectDB from "@/Config/Db";
 import DeliveryassignModel from "@/Models/deliveryassignModel";
+import MasterOrderModel from "@/Models/masterModel";
 import OrderModel from "@/Models/orderModel";
 import UserModel from "@/Models/userModel";
 import VendorModel from "@/Models/vendorModel";
@@ -18,20 +19,22 @@ export async function GET() {
 
         const activeassignment = await DeliveryassignModel.findOne({ assignCastedTo: deliveryboyId, status: "assigned" }).populate({
             path: "currentOrderId",
-            model: "Order",
+            model: OrderModel,
             populate: {
                 path: "vendor",
-                model: 'Vendor',
+                model: VendorModel,
+                localField: 'vendor',   
                 foreignField: 'userId',
-                localField: 'vendor',
                 populate: {
-                    path: "userId",
-                    model: 'User'
+                    path: "userId", 
+                    model: UserModel
                 }
             }
+        }).populate({
+            path: "masterOrderId",
+            model: MasterOrderModel
         })
-            .populate("masterOrderId")
-            .lean();
+        .lean();
 
         if (!activeassignment) {
             return NextResponse.json({ active: false }, { status: 200 })
