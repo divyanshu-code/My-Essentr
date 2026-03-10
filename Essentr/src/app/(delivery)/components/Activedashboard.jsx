@@ -14,8 +14,6 @@ const Activedashboard = ({ activeOrder, location }) => {
     const [step, setStep] = useState('pickup'); 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  console.log(activeOrder)
-
   const sheetVariants = {
     collapsed: { y: 0 },
     expanded: { y: -250 }

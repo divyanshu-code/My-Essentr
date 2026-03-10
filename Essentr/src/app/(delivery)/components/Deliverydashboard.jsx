@@ -31,7 +31,7 @@ const Deliverydashboard = ({ user }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [activeOrder, setActiveOrder] = useState();
   const [location, setLocation] = useState();
-  const [deliverylocation , setdeliverylocation ] = useState();
+  const [deliverylocation , setdeliverylocation] = useState();
 
   useEffect(() => {
     setIsMounted(true);
@@ -133,8 +133,6 @@ const Deliverydashboard = ({ user }) => {
 
     socket.on("new-assignments", (deliveryAssign) => {
 
-      console.log("deliveryboy", deliveryAssign)
-
       setAssignments((prev) => {
 
         const isDuplicate = prev.some(item => item._id === deliveryAssign._id);
@@ -189,6 +187,8 @@ const Deliverydashboard = ({ user }) => {
       if (!result.ok) throw new Error("Failed to fetch current order")
 
       const data = await result.json()
+
+      console.log(data)
 
       if (data.active) {
         setActiveOrder(data.data)
