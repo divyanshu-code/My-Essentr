@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+'use client'
+import React, { useState , useEffect } from 'react';
 import { motion as m } from 'framer-motion';
 import {
     Phone,
@@ -9,8 +10,10 @@ import {
     ExternalLink
 } from 'lucide-react';
 import Livemapping from '@/Components/Livemapping';
+import { getSocket } from '@/Config/socket';
+import { useSelector } from 'react-redux';
 
-const Activedashboard = ({ activeOrder, location, deliverylocation }) => {
+const Activedashboard = ({ activeOrder, location }) => {
     const [step, setStep] = useState('pickup');
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -18,6 +21,41 @@ const Activedashboard = ({ activeOrder, location, deliverylocation }) => {
         collapsed: { y: 0 },
         expanded: { y: -250 }
     };
+
+    const [deliverylocation, setdeliverylocation] = useState(null);
+
+    const data = useSelector((state) => state.user.userData);
+    
+    useEffect(() => {
+
+    if (!navigator.geolocation || !data?._id) return;
+
+    const socket = getSocket();
+
+    const watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+            const { latitude, longitude} = pos.coords;
+
+            console.log("Delivery Location:", { latitude, longitude });
+            
+            setdeliverylocation({ latitude, longitude });
+
+            socket.emit("updateLocation", {
+                userId: data?._id,
+                latitude,
+                longitude,
+            });
+        },
+        (err) => console.error(err),
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+}, [data?._id]);
 
     return (
         <div className="fixed inset-0 bg-slate-200 overflow-hidden flex flex-col">

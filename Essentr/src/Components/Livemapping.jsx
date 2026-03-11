@@ -1,31 +1,63 @@
 'use client'
-import React, { useState , useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion as m } from 'framer-motion';
 import {
     Navigation,
 } from 'lucide-react';
+import { useMap } from 'react-leaflet';
+
+const Draggblemarker = ({ position, setPosition, Leaflet }) => {
+
+  const map = useMap();
+
+  useEffect(() => {
+
+    if (position?.latitude && position?.longitude) {
+      map.setView([position.latitude, position.longitude], 15, { animate: true });
+    }
+
+  }, [position, map])
+
+  if (!Leaflet || !position) return null;
+
+  return (
+
+    <Leaflet.Marker
+      position={[position.latitude, position.longitude]}
+      icon={Leaflet.userIcon}
+      eventHandlers={{
+        dragend: (e) => {
+          const mark = e.target
+          const { lat, lng } = mark.getLatLng()
+          setPosition({ latitude: lat, longitude: lng })
+        }
+      }}>
+
+    </Leaflet.Marker>
+  )
+}
 
 const Livemapping = ({ deliverylocation, location }) => {
 
     const [Leaflet, setLeaflet] = useState(null);
-    const [position, setPosition] = useState(null); // Missing state
-    const [error, setError] = useState(null);      // Missing state
-
+    const [position, setPosition] = useState(null);
+    const [error, setError] = useState(null);
+    
     useEffect(() => {
         const loadLeaflet = async () => {
- 
+
             const L = await import('leaflet');
             await import('leaflet/dist/leaflet.css');
             const ReactLeaflet = await import('react-leaflet');
 
             const deliveryIcon = L.icon({
-                iconUrl: "https://cdn-icons-png.flaticon.com/128/6200/6200018.png",
-                iconSize: [45, 45]
+                iconUrl: "https://cdn-icons-png.flaticon.com/128/66/66841.png",
+                iconSize: [30, 30]
             });
 
             const userIcon = L.icon({
                 iconUrl: "https://cdn-icons-png.flaticon.com/128/3203/3203071.png",
-                iconSize: [45, 45]
+                iconSize: [30, 30]
             });
 
             setLeaflet({ ...ReactLeaflet, L, deliveryIcon, userIcon });
@@ -47,14 +79,14 @@ const Livemapping = ({ deliverylocation, location }) => {
             setError(err.message);
         };
 
-        navigator.geolocation.getCurrentPosition(handleSuccess, handleError, { 
-            enableHighAccuracy: true, 
-            timeout: 10000 
+        navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+            enableHighAccuracy: true,
+            timeout: 10000
         });
 
     }, []);
 
-    const center = deliverylocation ? [deliverylocation.latitude, deliverylocation.longitude] : [location.latitude, location.longitude]
+    const center = [location.latitude, location.longitude]
 
     return (
         <div className="flex-1 relative bg-blue-50 h-[400px] w-full">
@@ -67,6 +99,20 @@ const Livemapping = ({ deliverylocation, location }) => {
                             <Leaflet.TileLayer
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
+
+                            <Draggblemarker
+                                position={location}
+                                setPosition={setPosition}
+                                Leaflet={Leaflet}
+                            />
+                            {deliverylocation && (
+
+                                <Leaflet.Marker
+                                    position={[deliverylocation.latitude, deliverylocation.longitude]}
+                                    icon={Leaflet.deliveryIcon}
+                                />
+
+                            )}
 
                         </Leaflet.MapContainer>
 
