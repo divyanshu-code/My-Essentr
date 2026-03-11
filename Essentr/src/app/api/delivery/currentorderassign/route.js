@@ -34,7 +34,7 @@ export async function GET() {
             path: "masterOrderId",
             model: MasterOrderModel
         })
-        .lean();
+        
 
         if (!activeassignment) {
             return NextResponse.json({ active: false }, { status: 200 })

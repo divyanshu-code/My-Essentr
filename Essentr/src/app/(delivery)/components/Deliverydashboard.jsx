@@ -30,8 +30,8 @@ const Deliverydashboard = ({ user }) => {
   const [isOnDuty, setIsOnDuty] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [activeOrder, setActiveOrder] = useState();
-  const [location, setLocation] = useState();
-  const [deliverylocation , setdeliverylocation] = useState();
+  const [location, setLocation] = useState(null);
+  const [deliverylocation, setdeliverylocation] = useState(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -194,8 +194,8 @@ const Deliverydashboard = ({ user }) => {
         setActiveOrder(data.data)
 
         setLocation({
-          latitude: data.currentOrderId?.shippingAddress?.latitude,
-          longitude: data.currentOrderId?.shippingAddress?.longitude,
+          latitude: data?.data?.currentOrderId?.shippingAddress?.latitude,
+          longitude: data?.data?.currentOrderId?.shippingAddress?.longitude,
         })
       }
 
@@ -251,32 +251,44 @@ const Deliverydashboard = ({ user }) => {
   }
 
   useEffect(() => {
-  
-          if (!userdata._id) return
-          if (!navigator.geolocation) return
-  
-          const socket = getSocket();
-          socket.emit("userId", userdata?._id);
-  
-          const location = navigator.geolocation.watchPosition((position) => {
-              const { latitude, longitude } = position.coords;
-  
-              socket.emit("updateLocation", { userId : userdata?._id, latitude, longitude })
-  
-          }, (error) => {
-              console.log(error)
-          }, { enableHighAccuracy: true })
-  
-          return () => {
-              navigator.geolocation.clearWatch(location)
-          }
-  
-      }, [userdata?._id])
+
+    if (!userdata._id) return
+    if (!navigator.geolocation) return
+
+    const socket = getSocket();
+    socket.emit("userId", userdata?._id);
+
+    navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude } = position.coords;
+      setdeliverylocation({ latitude, longitude });
+      socket.emit("updateLocation", { userId: userdata._id, latitude, longitude });
+    });
+
+   const watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+
+      setdeliverylocation({ latitude, longitude });
+      socket.emit("updateLocation", { userId: userdata._id, latitude, longitude });
+    },
+    (error) => console.error("WatchPosition Error:", error),
+    { 
+      enableHighAccuracy: true, 
+      maximumAge: 0, 
+      timeout: 5000 
+    }
+  );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId)
+    }
+
+  }, [userdata?._id])
 
   if (activeOrder && location) {
     return (
       <div>
-          <Activedashboard activeOrder={activeOrder} location={location} />
+        <Activedashboard activeOrder={activeOrder} location={location} deliverylocation={deliverylocation} />
       </div>
     )
   }

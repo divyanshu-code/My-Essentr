@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
 import { motion as m } from 'framer-motion';
-import { 
-  Phone, 
-  MessageSquare, 
-  MapPin, 
-  ChevronUp, 
-  PackageCheck, 
-  ExternalLink
+import {
+    Phone,
+    MessageSquare,
+    MapPin,
+    ChevronUp,
+    PackageCheck,
+    ExternalLink
 } from 'lucide-react';
 import Livemapping from '@/Components/Livemapping';
 
-const Activedashboard = ({ activeOrder, location }) => {
-    const [step, setStep] = useState('pickup'); 
-  const [isExpanded, setIsExpanded] = useState(false);
+const Activedashboard = ({ activeOrder, location, deliverylocation }) => {
+    const [step, setStep] = useState('pickup');
+    const [isExpanded, setIsExpanded] = useState(false);
 
-  const sheetVariants = {
-    collapsed: { y: 0 },
-    expanded: { y: -250 }
-  };
+    const sheetVariants = {
+        collapsed: { y: 0 },
+        expanded: { y: -250 }
+    };
 
     return (
         <div className="fixed inset-0 bg-slate-200 overflow-hidden flex flex-col">
 
-            <Livemapping />
+            <Livemapping deliverylocation={deliverylocation} location={location} />
 
             <m.div
                 variants={sheetVariants}
@@ -38,7 +38,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                 </div>
 
                 <div className="px-8 pb-10">
-                 
+
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h2 className='text-xs font-black text-slate-400'>Order: #{activeOrder?.currentOrderId?._id.toString()?.slice(-6)}</h2>

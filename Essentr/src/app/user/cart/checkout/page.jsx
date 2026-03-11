@@ -408,7 +408,6 @@ const CheckoutPage = () => {
     }
   }
 
-
   const currentposition = (e) => {
 
     e.preventDefault();
