@@ -46,59 +46,59 @@ const Deliverydashboard = ({ user }) => {
     localStorage.setItem('rider_status', isOnDuty ? 'online' : 'offline');
   }, [isOnDuty, isMounted]);
 
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
-      return;
-    }
+  // useEffect(() => {
+  //   if (!navigator.geolocation) {
+  //     setError("Geolocation is not supported by your browser");
+  //     return;
+  //   }
 
-    const handleSuccess = async (pos) => {
-      const { latitude, longitude } = pos.coords;
-      try {
-        const res = await axios.get(`/api/map?lat=${latitude}&lon=${longitude}`);
-        const data = res.data;
-        const locationName = data.display_name || data.address?.city_district || "Unknown Location";
-        setAddress(locationName);
-      } catch (err) {
-        setAddress("Location found");
-      }
-    };
+  //   const handleSuccess = async (pos) => {
+  //     const { latitude, longitude } = pos.coords;
+  //     try {
+  //       const res = await axios.get(`/api/map?lat=${latitude}&lon=${longitude}`);
+  //       const data = res.data;
+  //       const locationName = data.display_name || data.address?.city_district || "Unknown Location";
+  //       setAddress(locationName);
+  //     } catch (err) {
+  //       setAddress("Location found");
+  //     }
+  //   };
 
-    const handleError = (err) => {
-      switch (err.code) {
+  //   const handleError = (err) => {
+  //     switch (err.code) {
 
-        case err.PERMISSION_DENIED:
+  //       case err.PERMISSION_DENIED:
 
-          setError("User denied the request for Geolocation.");
+  //         setError("User denied the request for Geolocation.");
 
-          break;
+  //         break;
 
-        case err.POSITION_UNAVAILABLE:
+  //       case err.POSITION_UNAVAILABLE:
 
-          setError("Location information is unavailable.");
+  //         setError("Location information is unavailable.");
 
-          break;
+  //         break;
 
-        case err.TIMEOUT:
+  //       case err.TIMEOUT:
 
-          setError("The request to get user location timed out.");
+  //         setError("The request to get user location timed out.");
 
-          break;
+  //         break;
 
-        default:
+  //       default:
 
-          setError("An unknown error occurred.");
+  //         setError("An unknown error occurred.");
 
-          break;
+  //         break;
 
-      }
-    };
+  //     }
+  //   };
 
-    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
-      enableHighAccuracy: true,
-      timeout: 10000
-    });
-  }, []);
+  //   navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+  //     enableHighAccuracy: true,
+  //     timeout: 10000
+  //   });
+  // }, []);
 
   useEffect(() => {
     const fetchAssignments = async () => {

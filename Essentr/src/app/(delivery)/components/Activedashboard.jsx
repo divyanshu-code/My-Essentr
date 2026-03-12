@@ -49,8 +49,8 @@ const Activedashboard = ({ activeOrder, location }) => {
         (err) => console.error(err),
         {
             enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 5000
+            maximumAge: 1000*60,
+            timeout: 20000
         }
     );
 
