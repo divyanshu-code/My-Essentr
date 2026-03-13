@@ -66,7 +66,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                 variants={sheetVariants}
                 animate={isExpanded ? "expanded" : "collapsed"}
                 transition={{ type: "spring", damping: 20 }}
-                className="bg-white rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20"
+                className="bg-white rounded-t-[3rem] h-80 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20"
             >
                 <div
                     onClick={() => setIsExpanded(!isExpanded)}

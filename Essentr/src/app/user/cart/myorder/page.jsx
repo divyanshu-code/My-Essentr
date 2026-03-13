@@ -175,9 +175,9 @@ const MyOrders = () => {
                                                     </div>
                                                     <div className='flex items-center gap-3'>
                                                         <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/5 text-[12px] px-3 py-1 rounded-md border border-green-500/20 font-black tracking-widest'>Call</a>
-                                                    <button className='text-green-500 bg-green-500/5 text-[12px] px-3 py-1 rounded-md border border-green-500/20 font-black tracking-widest' >
+                                                    <Link href={`/user/trackorder/${order._id?.toString()}`} className='text-green-500 bg-green-500/5 text-[12px] px-3 py-1 rounded-md border border-green-500/20 font-black tracking-widest' >
                                                         Track order
-                                                    </button>
+                                                    </Link>
                                                     </div>
                                                 </div>
                                             </div>

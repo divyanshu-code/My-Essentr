@@ -100,7 +100,7 @@ const Livemapping = ({ deliverylocation, location }) => {
     const center = [location.latitude, location.longitude]
 
     return (
-        <div className="flex-1 relative bg-blue-50 h-100 w-full">
+        <div className="flex-1 relative bg-blue-50 h-200 w-full">
 
             <div className="absolute inset-0 flex items-center justify-center">
                 {(Leaflet && location) ? (

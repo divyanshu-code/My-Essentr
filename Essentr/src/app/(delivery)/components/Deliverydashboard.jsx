@@ -252,6 +252,7 @@ const Deliverydashboard = ({ user }) => {
   if (activeOrder && location) {
     return (
       <div>
+        <Navbar user={user} />
         <Activedashboard activeOrder={activeOrder} location={location}  />
       </div>
     )
