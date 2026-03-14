@@ -45,8 +45,7 @@ const Livemapping = ({ deliverylocation, location }) => {
     const [position, setPosition] = useState(null);
     const [error, setError] = useState(null);
 
-    console.log("kkkkkkk" , deliverylocation, location);
-    
+    console.log("kkkkkkk", deliverylocation, location);
 
     useEffect(() => {
         const loadLeaflet = async () => {
@@ -97,10 +96,11 @@ const Livemapping = ({ deliverylocation, location }) => {
         [location.latitude, location.longitude],
         [deliverylocation.latitude, deliverylocation.longitude]] : null;
 
-    const center = [location.latitude, location.longitude]
+    const center = location?.latitude && location?.longitude
+        ? [location.latitude, location.longitude] : [28.6139, 77.2090];
 
     return (
-        <div className="flex-1 relative bg-blue-50 h-200 w-full">
+        <div className="flex-1 relative bg-blue-50 h-100 w-full">
 
             <div className="absolute inset-0 flex items-center justify-center">
                 {(Leaflet && location) ? (
@@ -118,12 +118,12 @@ const Livemapping = ({ deliverylocation, location }) => {
                             />
 
                             {deliverylocation && (
-                               
+
                                 <Leaflet.Marker
                                     position={[deliverylocation.latitude, deliverylocation.longitude]}
                                     icon={Leaflet.deliveryIcon}
                                 />
-                                
+
                             )}
 
                             {linepostion && (

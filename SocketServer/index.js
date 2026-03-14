@@ -57,8 +57,10 @@ io.on("connection", (socket) => {
             },
             body: JSON.stringify({ userId, location }),
         });
-
+        
+        io.emit("update-delivery-location" , {userId, location}) ;
     })
+
 
     socket.on("disconnect", () => {
         console.log("User disconnected. Socket ID:", socket.id);

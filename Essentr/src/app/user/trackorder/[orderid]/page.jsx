@@ -16,6 +16,8 @@ import {
     ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import Livemapping from '@/Components/Livemapping';
+import { getSocket } from '@/Config/socket';
 
 const page = ({ params }) => {
 
@@ -46,17 +48,16 @@ const page = ({ params }) => {
                 setorder(data);
                 setuserlocation({
                     latitude: data?.shippingAddress?.latitude,
-                    logitude: data?.shippingAddress?.longitude
+                    longitude: data?.shippingAddress?.longitude
                 })
 
                 setdeliverylocation({
                     latitude: data?.assignedDeliverypartner?.location?.coordinates[1],
-                    logitude: data?.assignedDeliverypartner?.location?.coordinates[0]
+                    longitude: data?.assignedDeliverypartner?.location?.coordinates[0]
                 })
 
             } catch (err) {
                 console.log(err);
-
             }
         }
 
@@ -86,31 +87,41 @@ const page = ({ params }) => {
     //   // Determine current status index for the progress bar
     //   const currentStatusIndex = statuses.findIndex("Preparing" === order?.status) !== -1 ? 1 : 0
 
+    const color = (status) => {
+        if (status === "Pending") return "text-blue-500";
+        if (status === "Out for delivery") return "text-orange-500";
+        if (status === "Delivered") return "text-green-500";
+        return "text-red-500";
+    }
+
+    useEffect(() => {
+      
+        const socket = getSocket();
+
+        socket.on("update-delivery-location" , ({userId, location})=>{
+            
+            if(userId.toString() === order?.assignedDeliverypartner?._id.toString()){
+                setdeliverylocation({
+                    latitude: location.coordinates[1],
+                    longitude: location.coordinates[0]
+                })
+            }
+        })
+
+        return () => {
+            socket.off("update-delivery-location");
+        }
+
+    }, [order])
+    
+
     return (
         <div className="h-screen bg-slate-50 pb-20">
-
             <div className="h-[50vh] w-full bg-slate-200 relative overflow-hidden">
-
-                {/* <MapContainer center={[riderLocation.lat, riderLocation.lng]} zoom={15}>...</MapContainer> */}
                 
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <div className="relative">
-                        <motion.div
-                            animate={{ scale: [1, 1.2, 1] }}
+                <Livemapping deliverylocation={deliverylocation}  location={userlocation} />
 
-                            className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white border-4 border-white shadow-2xl z-10 relative"
-                        >
-                            <Bike size={20} />
-                        </motion.div>
-                        <div className="w-20 h-20 bg-orange-400/30 rounded-full absolute -top-5 -left-5 animate-ping z-0" />
-                    </div>
-                </div>
-
-                <div className="absolute inset-0 mt-15 flex items-center justify-center">
-                    <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">Simulated GPS Map View</p>
-                </div>
-
-                <div className="absolute top-10 left-6 right-6 flex justify-between items-center z-10">
+                <div className="absolute top-5 left-12 right-6 flex justify-between items-center z-999">
                     <Link href={"/user/cart/myorder"} className="bg-white p-3 rounded-full shadow-lg border cursor-pointer border-slate-100 text-slate-500">
                         <ChevronRight size={20} className="rotate-180" />
                     </Link>
@@ -131,8 +142,8 @@ const page = ({ params }) => {
 
                     <div className="flex justify-between items-start mb-10 border-b border-slate-100 pb-6">
                         <div>
-                            <p className="text-xs text-slate-400 font-medium">Order ID: #</p>
-                            <h1 className="text-2xl font-black text-slate-800">Tracking Status</h1>
+                            <p className="text-xs text-slate-400 font-medium">Order ID: #{order?._id?.toString()?.slice(-6)}</p>
+                            <h1 className="text-lg font-black text-slate-800">Tracking Status: <span className={`text-xs uppercase ${color(order?.status)}`}>{order?.status}</span></h1>
                         </div>
                         <button className="text-slate-400">
                             <HelpCircle size={20} />
