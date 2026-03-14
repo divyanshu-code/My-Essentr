@@ -26,7 +26,7 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
 
     socket.on("joinVendorRoom", (vendorId) => {
-        socket.join(vendorId); 
+        socket.join(vendorId);
         console.log(`Vendor ${vendorId} joined their private room.`);
     });
 
@@ -44,7 +44,13 @@ io.on("connection", (socket) => {
 
     })
 
-    socket.on("updateLocation", ({ userId, latitude, longitude }) => {
+    socket.on("joinOrderRoom", (orderId) => {
+        socket.join(orderId);
+
+        console.log(`Socket joined order room: ${orderId}`);
+    });
+
+    socket.on("updateLocation", ({ userId, latitude, longitude , orderId}) => {
 
         const location = {
             type: "Point",
@@ -57,8 +63,8 @@ io.on("connection", (socket) => {
             },
             body: JSON.stringify({ userId, location }),
         });
-        
-        io.emit("update-delivery-location" , {userId, location}) ;
+
+        io.to(orderId).emit("update-delivery-location", { userId, location });
     })
 
 
@@ -67,16 +73,16 @@ io.on("connection", (socket) => {
     });
 });
 
-app.post("/notify" , (req , res)=>{
+app.post("/notify", (req, res) => {
 
-   const { event, data , target } = req.body;
-   
+    const { event, data, target } = req.body;
+
     if (target) {
         io.to(target).emit(event, data);
     } else if (data && data.vendor) {
         io.to(data.vendor).emit(event, data);
     } else {
-       
+
         io.emit(event, data);
     }
 

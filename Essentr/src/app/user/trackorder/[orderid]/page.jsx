@@ -95,17 +95,24 @@ const page = ({ params }) => {
     }
 
     useEffect(() => {
-      
+
         const socket = getSocket();
 
-        socket.on("update-delivery-location" , ({userId, location})=>{
-            
-            if(userId.toString() === order?.assignedDeliverypartner?._id.toString()){
+        if(order?._id){
+            socket.emit("joinOrderRoom", order._id);
+        }
+
+        socket?.on("update-delivery-location", (data) => {
+
+            console.log("update", data);
+
+            if (data.userId === order?.assignedDeliverypartner?._id) {
                 setdeliverylocation({
-                    latitude: location.coordinates[1],
-                    longitude: location.coordinates[0]
-                })
+                    latitude: data.location.coordinates?.[1],
+                    longitude: data.location.coordinates?.[0]
+                });
             }
+
         })
 
         return () => {
@@ -113,13 +120,13 @@ const page = ({ params }) => {
         }
 
     }, [order])
-    
+
 
     return (
         <div className="h-screen bg-slate-50 pb-20">
             <div className="h-[50vh] w-full bg-slate-200 relative overflow-hidden">
-                
-                <Livemapping deliverylocation={deliverylocation}  location={userlocation} />
+
+                <Livemapping deliverylocation={deliverylocation} location={userlocation} />
 
                 <div className="absolute top-5 left-12 right-6 flex justify-between items-center z-999">
                     <Link href={"/user/cart/myorder"} className="bg-white p-3 rounded-full shadow-lg border cursor-pointer border-slate-100 text-slate-500">

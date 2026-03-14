@@ -34,7 +34,9 @@ const Activedashboard = ({ activeOrder, location }) => {
 
     const watchId = navigator.geolocation.watchPosition(
         (pos) => {
-            const { latitude, longitude} = pos.coords;
+            const { latitude, longitude , accuracy} = pos.coords;
+
+            if (accuracy > 100) return;
 
             console.log("Delivery Location:", { latitude, longitude });
             
@@ -46,10 +48,10 @@ const Activedashboard = ({ activeOrder, location }) => {
                 longitude,
             });
         },
-        (err) => console.error(err),
+        (err) => console.error("WatchPosition Error:", err),
         {
             enableHighAccuracy: true,
-            maximumAge: 1000*60,
+            maximumAge: 3000,
             timeout: 20000
         }
     );
