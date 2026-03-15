@@ -13,7 +13,11 @@ import {
     HelpCircle,
     Phone,
     MessageSquare,
-    ChevronRight
+    ChevronRight,
+    User,
+    User2,
+    User2Icon,
+    PhoneCall
 } from 'lucide-react';
 import Link from 'next/link';
 import Livemapping from '@/Components/Livemapping';
@@ -98,7 +102,7 @@ const page = ({ params }) => {
 
         const socket = getSocket();
 
-        if(order?._id){
+        if (order?._id) {
             socket.emit("joinOrderRoom", order._id);
         }
 
@@ -126,7 +130,7 @@ const page = ({ params }) => {
         <div className="h-screen bg-slate-50 pb-20">
             <div className="h-[50vh] w-full bg-slate-200 relative overflow-hidden">
 
-                <Livemapping deliverylocation={deliverylocation} location={userlocation} />
+                {/* <Livemapping deliverylocation={deliverylocation} location={userlocation} /> */}
 
                 <div className="absolute top-5 left-12 right-6 flex justify-between items-center z-999">
                     <Link href={"/user/cart/myorder"} className="bg-white p-3 rounded-full shadow-lg border cursor-pointer border-slate-100 text-slate-500">
@@ -147,92 +151,39 @@ const page = ({ params }) => {
             >
                 <div className="py-8 px-4">
 
-                    <div className="flex justify-between items-start mb-10 border-b border-slate-100 pb-6">
-                        <div>
+                    <div className="flex justify-between items-start mb-5 border-b border-slate-200 pb-2">
+                        <div className='leading-tight'>
                             <p className="text-xs text-slate-400 font-medium">Order ID: #{order?._id?.toString()?.slice(-6)}</p>
                             <h1 className="text-lg font-black text-slate-800">Tracking Status: <span className={`text-xs uppercase ${color(order?.status)}`}>{order?.status}</span></h1>
+                            <span className={`text-xs uppercase font-bold ${(order?.isPaid) ? 'text-green-500' : 'text-red-500'}`}>{order?.isPaid ? 'Paid' : 'Unpaid'}</span>
                         </div>
                         <button className="text-slate-400">
                             <HelpCircle size={20} />
                         </button>
                     </div>
 
-                    <div className="flex items-start justify-between relative mb-12">
-
-                        <div className="absolute top-4.5 left-6 right-6 h-1 bg-slate-100 z-0 rounded-full overflow-hidden">
-                            {/* <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(currentStatusIndex / (statuses.length - 1)) * 100}%` }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="h-full bg-orange-500 rounded-full"
-                /> */}
-                        </div>
-
-                        {/* {statuses.map((status, index) => {
-              const Icon = status.icon;
-              const isCompleted = index <= currentStatusIndex;
-              const isCurrent = index === currentStatusIndex;
-
-              return (
-                <div key={status.key} className="flex flex-col items-center gap-3 relative z-10 flex-1 text-center">
-                  <motion.div 
-                    animate={{ 
-                        backgroundColor: isCompleted ? '#F97316' : '#F1F5F9', // orange-500 : slate-100
-                        scale: isCurrent ? 1.1 : 1
-                    }}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border-4 ${
-                        isCompleted ? 'border-orange-100 text-white' : 'border-white text-slate-400'
-                    }`}
-                  >
-                    {isCompleted && !isCurrent ? <CheckCircle2 size={18} /> : <Icon size={18} />}
-                  </motion.div>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${
-                    isCompleted ? 'text-slate-800' : 'text-slate-400'
-                  }`}>
-                    {status.name}
-                  </p>
-                </div>
-              );
-            })} */}
+                    <div className="flex flex-col items-start  relative mb-8">
+                      
+                         <h1 className='text-xs font-bold'>Assign To : <span className='ml-2 text-xs font-semibold'>{order?.assignedDeliverypartner?.name || "Not Assigned"}</span></h1>
+                         <h1 className='text-xs font-bold'>Contact : <span className='ml-4 text-xs font-semibold'>{order?.assignedDeliverypartner?.mobile || "N/A"}</span></h1>
+                       
                     </div>
 
-                    {/* Rider Details (Only show when 'Out for Delivery') */}
-                    <AnimatePresence>
-                        {/* {currentStatusIndex >= 2 && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-center gap-4 mb-10 shadow-inner"
-              >
-                <div className="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-lg flex-shrink-0">
-                  R
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Your Delivery Partner</p>
-                  <h4 className="text-lg font-bold text-slate-800">Rahul Sharma</h4>
-                  <div className="flex gap-1 text-orange-500 mt-0.5">
-                    {[1, 2, 3, 4, 5].map(s => <CheckCircle2 size={12} key={s}/>)}
-                  </div>
-                </div>
-                <div className="ml-auto flex gap-2">
-                    <button className="p-4 bg-slate-100 rounded-2xl text-slate-600 active:scale-95"><MessageSquare size={18}/></button>
-                    <button className="p-4 bg-green-100 text-green-600 rounded-2xl shadow-sm active:scale-95"><Phone size={18}/></button>
-                </div>
-              </motion.div>
-            )} */}
-                    </AnimatePresence>
-
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 flex gap-4 items-start">
-                        <div className="bg-blue-100 p-3 rounded-2xl text-blue-600">
-                            <MapPin size={24} />
-                        </div>
+                    <div className="bg-white px-5 py-4 rounded-xl shadow-md border border-slate-100 flex gap-4 items-start">
                         <div>
-                            <h4 className="font-bold text-slate-800">Delivery Address</h4>
-                            <p className="text-sm text-slate-500 mt-1">
-                                hhhhhhhhhhhh
-                            </p>
-                            <p className="text-sm text-slate-500">hhhhhhhhhh</p>
+                            <h1 className="font-bold text-sm text-slate-800 ml-5">Delivery Address</h1>
+                            <div className='flex items-center gap-2 mt-1 text-left'>
+                                <User2Icon size={16} className="text-slate-400" />
+                                <p className="text-xs text-slate-500">{order?.shippingAddress?.name}</p>
+                            </div>
+                            <div className='flex items-center gap-2 mt-1 text-left'>
+                                <PhoneCall size={13} className="text-slate-400" />
+                                <p className="text-xs text-slate-500">{order?.shippingAddress?.mobile}</p>
+                            </div>
+                            <div className='flex items-center gap-2 mt-1 '>
+                                <MapPin size={14} className="text-slate-400" />
+                                <p className="text-xs text-slate-500 "> {order?.shippingAddress?.address || "N/A"} </p>
+                            </div>
                         </div>
                     </div>
 
