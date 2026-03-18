@@ -12,10 +12,10 @@ import {
 import Livemapping from '@/Components/Livemapping';
 import { getSocket } from '@/Config/socket';
 import { useSelector } from 'react-redux';
+import Link from 'next/link';
 
 const Activedashboard = ({ activeOrder, location }) => {
     const [step, setStep] = useState('pickup');
-    const [isExpanded, setIsExpanded] = useState(false);
 
     const sheetVariants = {
         collapsed: { y: 0 },
@@ -66,18 +66,12 @@ const Activedashboard = ({ activeOrder, location }) => {
 
             <m.div
                 variants={sheetVariants}
-                animate={isExpanded ? "expanded" : "collapsed"}
+              
                 transition={{ type: "spring", damping: 20 }}
-                className="bg-white rounded-t-[3rem] h-80 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20"
+                className="bg-white rounded h-80 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20"
             >
-                <div
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="w-full py-4 flex justify-center cursor-pointer"
-                >
-                    <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
-                </div>
 
-                <div className="px-8 pb-10">
+                <div className="px-8 pb-10 mt-10">
 
                     <div className="flex justify-between items-start mb-6">
                         <div>
@@ -90,7 +84,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button className="p-4 bg-slate-100 rounded-2xl text-slate-600"><MessageSquare size={20} /></button>
+                            <Link href={"/chatbot"}  className="p-4 bg-slate-100 rounded-2xl text-slate-600"><MessageSquare size={20} /></Link>
                             <button className="p-4 bg-green-100 text-green-600 rounded-2xl shadow-sm"><Phone size={20} /></button>
                         </div>
                     </div>
@@ -133,7 +127,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                         </p>
                     </div>
                 </div>
-            </m.div>
+            </m.div> 
         </div>
     )
 }

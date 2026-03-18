@@ -253,7 +253,7 @@ const Deliverydashboard = ({ user }) => {
     return (
       <div>
         <Navbar user={user} />
-        <Activedashboard activeOrder={activeOrder} location={location}  />
+        <Activedashboard activeOrder={activeOrder} location={location} />
       </div>
     )
   }
@@ -346,11 +346,11 @@ const Deliverydashboard = ({ user }) => {
 
                         <div className="flex flex-col mt-2 items-center py-1">
 
-                          <div className="w-2 h-2 rounded-full bg-slate-300 flex-shrink-0" />
+                          <div className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
 
-                          <div className="flex-1 w-[2px] bg-gradient-to-b from-slate-200 to-orange-200 my-1" />
+                          <div className="flex-1 w-0.5 bg-linear-to-b from-slate-200 to-orange-200 my-1" />
 
-                          <div className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
+                          <div className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
                         </div>
 
                         <div className="flex-1 space-y-4">
@@ -368,7 +368,7 @@ const Deliverydashboard = ({ user }) => {
                                   className={`flex items-start gap-3 w-96 p-2 rounded-lg border transition-all duration-300 ${isReady ? 'bg-green-50 border-green-200' : 'bg-slate-100 border-slate-100'
                                     }`}
                                 >
-                                  <div className="mt-2 flex-shrink-0">
+                                  <div className="mt-2 shrink-0">
                                     {isReady ? (
                                       <div className="bg-green-500 rounded-full p-0.5 shadow-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-2 w-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
@@ -387,7 +387,7 @@ const Deliverydashboard = ({ user }) => {
                                           {child.vendor?.businessName || "Store"}
                                         </p>
                                         {isReady && (
-                                          <span className="text-[7px] font-bold  text-green-600 uppercase bg-green-200 px-1  rounded-[4px]">
+                                          <span className="text-[7px] font-bold  text-green-600 uppercase bg-green-200 px-1  rounded-sm">
                                             Ready for Pickup
                                           </span>
                                         )}

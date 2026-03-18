@@ -165,7 +165,7 @@ const page = ({ params }) => {
                     <div className="flex flex-col items-start  relative mb-8">
                       
                          <h1 className='text-xs font-bold'>Assign To : <span className='ml-2 text-xs font-semibold'>{order?.assignedDeliverypartner?.name || "Not Assigned"}</span></h1>
-                         <h1 className='text-xs font-bold'>Contact : <span className='ml-4 text-xs font-semibold'>{order?.assignedDeliverypartner?.mobile || "N/A"}</span></h1>
+                         <h1 className='text-xs font-bold'>Contact : <span className='ml-4.5 text-xs font-semibold'>{order?.assignedDeliverypartner?.mobile || "N/A"}</span></h1>
                        
                     </div>
 
@@ -173,7 +173,7 @@ const page = ({ params }) => {
                         <div>
                             <h1 className="font-bold text-sm text-slate-800 ml-5">Delivery Address</h1>
                             <div className='flex items-center gap-2 mt-1 text-left'>
-                                <User2Icon size={16} className="text-slate-400" />
+                                <User2Icon size={15} className="text-slate-400" />
                                 <p className="text-xs text-slate-500">{order?.shippingAddress?.name}</p>
                             </div>
                             <div className='flex items-center gap-2 mt-1 text-left'>
