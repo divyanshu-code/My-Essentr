@@ -132,6 +132,9 @@ const CheckoutPage = () => {
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
+
+      if (window.Razorpay) return resolve(true);
+
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => resolve(true);
@@ -141,102 +144,82 @@ const CheckoutPage = () => {
   };
 
   const handleRazorpay = async () => {
+
+    if (isEmpty) return;
     setLoading(true);
 
-    if (!formData.name || !formData.mobile) {
-      alert("Please fill in your Name and Mobile Number first.");
-      setStep(1);
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded) {
+      toast.error("Failed to load Razorpay. Check your internet connection.");
+      setLoading(false);
       return;
     }
 
-    const res = await loadRazorpayScript();
-    if (!res) {
-      alert("Razorpay SDK failed to load. Check your internet connection.");
-      return;
-    }
+    const groupedItems = items.reduce((acc, item) => {
+      const vId = item.vendor._id || item.vendor;
+      if (!acc[vId]) acc[vId] = [];
+      acc[vId].push({
+        product: item._id,
+        quantity: item.quantity,
+        price: item.price,
+        name: item.name,
+        image: item.image,
+        unit: item.unit,
+        unit1: item.unit1,
+        vendor: vId,
+      });
+      return acc;
+    }, {});
 
     try {
 
-      const response = await fetch("/api/razorpay", {
+      const res = await fetch("/api/razorpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-
-          amount: total,
-          userId: data?._id,
-          items: items.map(item => ({
-            product: item._id,
-            quantity: item.quantity,
-            price: item.price,
-            name: item.name,
-            image: item.image,
-            unit: item.unit
-          })),
-          shippingAddress: {
-            name: formData.name,
-            mobile: formData.mobile,
-            pincode: formData.pincode,
-            state: formData.state,
-            address: formData.address,
-            latitude: parseFloat(position.lat),
-            longitude: parseFloat(position.lng)
-          },
-          totalamount: total,
-          paymentMethod: "razorpay"
-
-        }),
+        body: JSON.stringify({ amount: total }),
       });
 
-      const order = await response.json();
-
-      if (!response.ok) throw new Error(order.error || "Failed to create order");
+      const { order } = await res.json();
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
-        currency: order.currency,
-        name: "Essentr.",
-        description: "From store to Door",
+        currency: "INR",
+        name: "Essentr",
         order_id: order.id,
 
         handler: async function (response) {
-          const verification = await fetch("/api/verify-payment", {
+          const verifyRes = await fetch("/api/razorpay/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              userId: data?._id,
+              items: groupedItems,
+              totalamount: total,
+              shippingAddress: {
+                name: formData.name,
+                mobile: formData.mobile,
+                pincode: formData.pincode,
+                state: formData.state,
+                address: formData.address,
+                latitude: parseFloat(position.lat),
+                longitude: parseFloat(position.lng),
+              },
             }),
           });
 
-          const result = await verification.json();
+          const result = await verifyRes.json();
 
-          if (result.success) {
-            setPaymentId(response.razorpay_payment_id);
+          if (verifyRes.ok && result.success) {
+            setPaymentId(result.masterOrderId);
             setIsSuccess(true);
-
+            setLoading(false);
           } else {
-            alert("Payment verification failed. Please contact support.");
-          }
-        },
-
-        modal: {
-          ondismiss: function () {
-            console.log("User cancelled the payment modal.");
-
-            toast.error("Payment cancelled", {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              transition: Slide,
-            });
-
+            toast.error("Payment verified but order saving failed!");
+            setLoading(false);
           }
         },
 
@@ -244,34 +227,21 @@ const CheckoutPage = () => {
           name: formData.name,
           contact: formData.mobile,
         },
-        theme: {
-          color: "#10b981",
-        },
+
+        theme: { color: "#16a34a" },
       };
 
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-      setLoading(false)
-
-    } catch (err) {
-
-      toast.error(err.message, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-        transition: Slide,
-      });
-
-      console.log(err.message);
+      const razor = new window.Razorpay(options);
+      razor.open();
       setLoading(false);
 
+    } catch (err) {
+      console.log(err);
+      toast.error(err.message);
+      setLoading(false);
     }
-  }
+  };
+
 
   const handlesubmit = async (e) => {
 

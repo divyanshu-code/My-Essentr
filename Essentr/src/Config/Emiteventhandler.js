@@ -10,8 +10,11 @@ async function Emiteventhandler( event , data, target = null){
             body : JSON.stringify({ event , data , target}),
         });
 
+        return res ;
+
     } catch (error) {
         console.log(error);
+        console.warn("Socket server unreachable, skipping emit:", err.message);
     }
 }
 

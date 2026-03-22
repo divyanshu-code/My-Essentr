@@ -1,5 +1,4 @@
 import connectDB from "@/Config/Db";
-import OrderModel from "@/Models/orderModel";
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
@@ -13,36 +12,21 @@ export async function POST(req) {
     await connectDB();
 
     const body = await req.json();
-    const { amount, userId, items, totalamount, paymentMethod, shippingAddress, changeOption, change } = body;
+    const { amount } = body;
 
-    if (!userId || !Array.isArray(items) || !totalamount || !shippingAddress) {
-      return NextResponse.json({ error: 'Missing core order data' }, { status: 400 });
+    if (!amount) {
+      return NextResponse.json({ error: "Amount is required" }, { status: 400 });
     }
 
     const options = {
-      amount: amount * 100,                            // paise
+      amount: amount * 100, // paise
       currency: "INR",
       receipt: "receipt_" + Math.random().toString(36).substring(7),
     };
+
     const razorpayOrder = await instance.orders.create(options);
 
-    const newOrder = await OrderModel.create({
-      user: userId,
-      items,
-      totalamount,
-      paymentMethod,
-      shippingAddress,
-      status: "Pending",
-      changeOption: changeOption || "none",
-      return: change || 0,
-      razorpayOrderId: razorpayOrder.id,
-      isPaid: false,
-    });
-
-    return NextResponse.json({
-      ...razorpayOrder,
-      dbOrderId: newOrder._id
-    });
+    return NextResponse.json({ success: true, order: razorpayOrder }, { status: 200 });
 
   } catch (error) {
     console.log("RAZORPAY_ERROR:", error);
