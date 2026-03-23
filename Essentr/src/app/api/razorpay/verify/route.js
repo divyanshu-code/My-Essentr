@@ -47,11 +47,13 @@ export async function POST(req) {
         (sum, item) => sum + Number(item.price) * item.quantity, 0
       );
 
+      const deliveryCharge = totalamount - vendorTotal ; 
+
       const childOrder = await OrderModel.create({
         user: userId,
         vendor: vendorId,
         items: vendorItems,
-        totalamount: vendorTotal,
+        totalamount: vendorTotal + deliveryCharge ,
         paymentMethod: "razorpay",
         shippingAddress,
         parentOrder: masterOrder._id,

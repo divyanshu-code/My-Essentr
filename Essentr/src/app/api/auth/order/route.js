@@ -28,11 +28,13 @@ export async function POST(request) {
             const vendorItems = items[vendorId];
             const vendorTotal = vendorItems.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
 
+            const deliveryCharge = totalamount - vendorTotal ;
+
             const childOrder = await OrderModel.create({
                 user: userId,
                 vendor: vendorId,
                 items: vendorItems,
-                totalamount: vendorTotal,
+                totalamount: vendorTotal + deliveryCharge,
                 paymentMethod,
                 shippingAddress,
                 parentOrder: masterOrder._id,
