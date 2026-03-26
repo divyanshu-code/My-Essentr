@@ -67,6 +67,25 @@ io.on("connection", (socket) => {
         io.to(orderId).emit("update-delivery-location", { userId, location });
     })
 
+    socket.on("joinChatRoom" , (roomId)=>{
+        socket.join(roomId);
+
+        console.log(`Socket joined chat room: ${roomId}`);
+    })
+
+    socket.on("sendMessage", async ({ roomId, senderId, text, time }) => {
+            
+         await fetch(`${process.env.NEXT_BASE_URL}/api/chat/savemessage`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ roomId, senderId, text, time }),
+        });
+
+        io.to(roomId).emit("newMessage", { roomId, senderId, text, time });
+            
+    })
 
     socket.on("disconnect", () => {
         console.log("User disconnected. Socket ID:", socket.id);
