@@ -168,7 +168,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto bg-slate-50">
-                                    <Chatassistant />
+                                    <Chatassistant orderId={activeOrder?.currentOrderId?._id} deliverboyId= {data?._id} />
                                 </div>
                             </m.div>
                         </m.div>

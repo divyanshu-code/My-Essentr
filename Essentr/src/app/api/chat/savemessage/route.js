@@ -1,6 +1,6 @@
 import connectDB from '@/Config/Db';
-import ChatModel from '@/Models/chatroomModel';
 import MessageModel from '@/Models/messageModel';
+import OrderModel from '@/Models/orderModel';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
@@ -13,7 +13,7 @@ export async function POST(req) {
             return NextResponse.json({ error: 'Missing required fields' },{ status: 400 });
         }
 
-        let chatroom = await ChatModel.findById(roomId);
+        let chatroom = await OrderModel.findById(roomId);
 
         if(!chatroom){
              return NextResponse.json({ error: 'Chat room not found' },{ status: 404 });

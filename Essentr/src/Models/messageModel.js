@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const messageSchema = new mongoose.Schema({
     roomId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Chatroom',
+        ref: 'Order',
         required: true
     },
     text: {

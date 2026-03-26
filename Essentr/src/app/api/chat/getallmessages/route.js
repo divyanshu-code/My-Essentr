@@ -1,17 +1,15 @@
 import connectDB from "@/Config/Db";
-import { connectToDatabase } from "@/lib/mongodb";
-import ChatModel from "@/Models/chatroomModel";
-import Message from "@/models/Message";
 import MessageModel from "@/Models/messageModel";
+import OrderModel from "@/Models/orderModel";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
     try {
-        await connectDB();
+        await connectDB()
 
         const { roomId } = await request.json();
 
-        let room = await ChatModel.findById(roomId) ;
+        let room = await OrderModel.findById(roomId) ;
 
         if (!room) {
             return NextResponse.json(
