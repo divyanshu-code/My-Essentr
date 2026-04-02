@@ -5,23 +5,17 @@ import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MapPin,
-    Bike,
-    Store,
-    CheckCircle2,
-    Package,
-    Truck,
     HelpCircle,
-    Phone,
-    MessageSquare,
     ChevronRight,
-    User,
-    User2,
     User2Icon,
-    PhoneCall
+    PhoneCall,
+    MessageSquare,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 import Livemapping from '@/Components/Livemapping';
 import { getSocket } from '@/Config/socket';
+import Chatassistant from '@/Components/Chatassistant';
 
 const page = ({ params }) => {
 
@@ -31,6 +25,8 @@ const page = ({ params }) => {
     const [userlocation, setuserlocation] = useState()
     const [deliverylocation, setdeliverylocation] = useState()
     const [order, setorder] = useState()
+
+    const [extend, setextend] = useState(false)
 
     const userdata = useSelector((state) => state.user.userData);
 
@@ -73,23 +69,7 @@ const page = ({ params }) => {
         visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20 } }
     };
 
-    const itemVariants = {
-        hidden: { opacity: 0, x: -20 },
-        visible: { opacity: 1, x: 0 }
-    };
-
     const [riderLocation, setRiderLocation] = useState({ lat: 28.5355, lng: 77.3910 });
-
-    // Mocking the order status progression
-    //   const statuses = [
-    //     { name: 'Order Placed', icon: Package, key: 'Pending' },
-    //     { name: 'Preparing', icon: Store, key: 'Processing' },
-    //     { name: 'Out for Delivery', icon: Truck, key: 'Out for delivery' },
-    //     { name: 'Delivered', icon: CheckCircle2, key: 'Delivered' }
-    //   ];
-
-    //   // Determine current status index for the progress bar
-    //   const currentStatusIndex = statuses.findIndex("Preparing" === order?.status) !== -1 ? 1 : 0
 
     const color = (status) => {
         if (status === "Pending") return "text-blue-500";
@@ -157,16 +137,23 @@ const page = ({ params }) => {
                             <h1 className="text-lg font-black text-slate-800">Tracking Status: <span className={`text-xs uppercase ${color(order?.status)}`}>{order?.status}</span></h1>
                             <span className={`text-xs uppercase font-bold ${(order?.isPaid) ? 'text-green-500' : 'text-red-500'}`}>{order?.isPaid ? 'Paid' : 'Unpaid'}</span>
                         </div>
-                        <button className="text-slate-400">
-                            <HelpCircle size={20} />
-                        </button>
+
+                        <div className='flex items-center justify-center gap-5'>
+
+                            <button onClick={() => setextend(!extend)} className="p-4 cursor-pointer  text-slate-400"><MessageSquare size={20} /></button>
+                            <button className="text-slate-400">
+                                <HelpCircle size={20} />
+                            </button>
+
+                        </div>
+
                     </div>
 
                     <div className="flex flex-col items-start  relative mb-8">
-                      
-                         <h1 className='text-xs font-bold'>Assign To : <span className='ml-2 text-xs font-semibold'>{order?.assignedDeliverypartner?.name || "Not Assigned"}</span></h1>
-                         <h1 className='text-xs font-bold'>Contact : <span className='ml-4.5 text-xs font-semibold'>{order?.assignedDeliverypartner?.mobile || "N/A"}</span></h1>
-                       
+
+                        <h1 className='text-xs font-bold'>Assign To : <span className='ml-2 text-xs font-semibold'>{order?.assignedDeliverypartner?.name || "Not Assigned"}</span></h1>
+                        <h1 className='text-xs font-bold'>Contact : <span className='ml-4.5 text-xs font-semibold'>{order?.assignedDeliverypartner?.mobile || "N/A"}</span></h1>
+
                     </div>
 
                     <div className="bg-white px-5 py-4 rounded-xl shadow-md border border-slate-100 flex gap-4 items-start">
@@ -189,6 +176,44 @@ const page = ({ params }) => {
 
                 </div>
             </motion.div>
+
+            <AnimatePresence>
+                {extend && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50  flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-4"
+                    >
+                        <div className="absolute inset-0" onClick={() => setextend(false)} />
+
+                        <motion.div
+                            initial={{ y: 100, scale: 0.9, opacity: 0 }}
+                            animate={{ y: 0, scale: 1, opacity: 1 }}
+                            exit={{ y: 100, scale: 0.9, opacity: 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                            className="relative w-full max-w-lg mt-20 bg-white rounded-2xl shadow-2xl overflow-hidden  flex flex-col h-[80vh] sm:h-150"
+                        >
+                            <div className="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
+                                <div>
+                                    <h3 className="font-black text-slate-800 text-lg">Chat Assistant</h3>
+                                    <p className="text-xs text-green-500 font-bold">Online • Support</p>
+                                </div>
+                                <button
+                                    onClick={() => setextend(false)}
+                                    className="p-3 bg-slate-100 hover:bg-slate-200 cursor-pointer rounded-full text-slate-500 transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto bg-slate-50">
+                                <Chatassistant orderId={orderid} deliverboyId={userdata?._id} />
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }

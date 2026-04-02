@@ -154,7 +154,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
                                 className="relative w-full max-w-lg mt-20 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[80vh] sm:h-150"
                             >
-                                <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                                <div className="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-10">
                                     <div>
                                         <h3 className="font-black text-slate-800 text-lg">Chat Assistant</h3>
                                         <p className="text-xs text-green-500 font-bold">Online • Support</p>
