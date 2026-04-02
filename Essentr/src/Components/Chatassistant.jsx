@@ -89,34 +89,30 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
   }
 
   return (
-    <div className='px-8 py-5 flex flex-col h-full'>
+    <div className='px-8 py-5 flex flex-col h-full '>
 
       <div className='flex-1 overflow-y-auto p-2 space-y-2'>
-
         <AnimatePresence>
           {fetchMessages?.map((msg, index) => (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              key={index} className={`flex ${msg.senderId === deliverboyId ? 'justify-end' : 'justify-start'} mb-2`}>
-              <div className={`max-w-xs px-4 py-2 rounded-xl ${msg.senderId === deliverboyId ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-800'}`}>
-                <p className="text-sm">{msg.text}</p>
-                <span className="text-xs text-gray-600 mt-1 block text-right">{msg.time}</span>
+              key={index} className={`flex ${msg.senderId === deliverboyId ? 'justify-end' : 'justify-start'} `}>
+              <div className={`max-w-[80%] px-4 py-2 rounded-xl ${msg.senderId === deliverboyId ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-800'}`}>
+                <p className="text-sm font-medium ">{msg.text}</p>
+                <span className={`text-xs text-gray-600 mt-1 block ${msg.senderId === deliverboyId ? 'text-right' : 'text-left'}`}>{msg.time}</span>
               </div>
             </motion.div>
           ))}
 
           <div ref={bottomRef} />
-
         </AnimatePresence>
-
       </div>
 
-      <div className='fixed  bottom-14 w-115 flex items-center justify-center gap-5'>
-        <input type="text" value={message} onChange={(e) => setmessage(e.target.value)} className='border w-full rounded-lg text-sm p-2 border-gray-400 focus:outline-none ' placeholder="Type a message..." onKeyUp={handlemessage} />
+      <div className='flex items-center justify-center gap-5 my-2'>
+        <input type="text" value={message} onChange={(e) => setmessage(e.target.value)} className='flex-1 bg-transparent border w-full rounded-lg text-sm p-2 border-gray-400 focus:outline-none ' placeholder="Type a message..." onKeyUp={handlemessage} />
         <button className='rounded-full cursor-pointer bg-neutral-200 hover:bg-neutral-300  p-2.5'> <ArrowRight size={19} onClick={handleSendMessage} /> </button>
-
       </div>
     </div>
 

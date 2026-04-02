@@ -207,7 +207,7 @@ const page = ({ params }) => {
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto bg-slate-50">
+                            <div className="flex-1 overflow-hidden bg-slate-50">
                                 <Chatassistant orderId={orderid} deliverboyId={userdata?._id} />
                             </div>
                         </motion.div>

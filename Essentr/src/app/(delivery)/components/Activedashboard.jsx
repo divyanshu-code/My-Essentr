@@ -167,7 +167,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                     </button>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto bg-slate-50">
+                                <div className="flex-1 overflow-hidden bg-slate-50">
                                     <Chatassistant orderId={activeOrder?.currentOrderId?._id} deliverboyId= {data?._id} />
                                 </div>
                             </m.div>
