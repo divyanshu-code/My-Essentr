@@ -88,6 +88,10 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
     }
   }
 
+  useEffect(()=>{
+    
+  })
+
   return (
     <div className='px-8 py-5 flex flex-col h-full '>
 
