@@ -1,8 +1,5 @@
 import connectDB from '@/Config/Db';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(request) {
     try {
@@ -50,9 +47,16 @@ export async function POST(request) {
         });
 
         const data = await response.json();
-        // const suggestion = data.candidates[0].content.parts[0].text;
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-        return NextResponse.json({ data } , { status: 200 });
+        console.log(reply);
+
+        const suggestions = reply.split(',').map(s => s.trim());
+
+        console.log(suggestions);
+        
+
+        return NextResponse.json({ suggestions } , { status: 200 });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to generate suggestion' }, { status: 500 });
     }
