@@ -8,17 +8,24 @@ import {
     ChevronUp,
     PackageCheck,
     ExternalLink,
-    X
+    X,
+    User2,
+    ShoppingCart
 } from 'lucide-react';
 import Livemapping from '@/Components/Livemapping';
 import { getSocket } from '@/Config/socket';
 import { useSelector } from 'react-redux';
-import Chatassistant from '@/Components/Chatassistant';
+import Chatassistant from '@/Components/Chatassistant';;
+import { FcBusiness, FcBusinessman } from 'react-icons/fc';
+import { IoBusiness } from 'react-icons/io5';
+import { MdBusiness, MdBusinessCenter } from 'react-icons/md';
 
 const Activedashboard = ({ activeOrder, location }) => {
 
     const [step, setStep] = useState('pickup');
     const [extend, setextend] = useState(false);
+
+    console.log(activeOrder)
 
     const sheetVariants = {
         collapsed: { y: 0 },
@@ -86,9 +93,20 @@ const Activedashboard = ({ activeOrder, location }) => {
                                     <h2 className="text-xl font-black text-slate-800">
                                         {step === 'pickup' ? 'Pickup from Vendor' : 'Deliver to Customer'}
                                     </h2>
-                                    <p className="text-slate-500 text-xs flex items-center gap-1">
-                                        <MapPin size={12} /> {activeOrder?.currentOrderId?.vendor?.address}
-                                    </p>
+                                    <div className="text-slate-500 text-xs flex flex-col ">
+                                        <div className="flex items-center gap-1">
+                                            <User2 size={12} /> {activeOrder?.currentOrderId?.vendor?.name}
+                                        </div>
+
+                                        <div className="flex items-center gap-1">
+                                            <IoBusiness size={12}/> {activeOrder?.currentOrderId?.vendor?.businessName}
+                                        </div>
+
+                                        <div className="flex items-center gap-1">
+                                            <MapPin size={11} /> {activeOrder?.currentOrderId?.vendor?.address}
+                                        </div>
+
+                                    </div>
                                 </div>
                                 <div className="flex gap-2 ">
                                     <button onClick={() => setextend(!extend)} className="p-4 cursor-pointer bg-slate-100 rounded-2xl text-slate-600"><MessageSquare size={20} /></button>
@@ -168,7 +186,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                 </div>
 
                                 <div className="flex-1 overflow-hidden bg-slate-50">
-                                    <Chatassistant orderId={activeOrder?.currentOrderId?._id} deliverboyId= {data?._id} />
+                                    <Chatassistant orderId={activeOrder?.currentOrderId?._id} deliverboyId={data?._id} />
                                 </div>
                             </m.div>
                         </m.div>
