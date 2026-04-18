@@ -1,6 +1,6 @@
 import { getSocket } from '@/Config/socket'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRight, Sparkle } from 'lucide-react'
+import { ArrowRight, Loader, Sparkle } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 
 const Chatassistant = ({ orderId, deliverboyId }) => {
@@ -11,6 +11,7 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
   const bottomRef = useRef(null)
 
   const [suggestion, setsuggestion] = useState([])
+  const [loader , setloader] = useState(false);
 
   useEffect(() => {
 
@@ -39,6 +40,7 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
 
       } catch (err) {
         console.error("Failed to fetch messages:", err);
+        
       }
     }
 
@@ -91,6 +93,8 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
 
   const getsuggestion = async () => {
 
+    setloader(true);
+
     try {
       const result = await fetch('/api/chat/aisuggestion', {
         method: "POST",
@@ -105,9 +109,11 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
       const suggestions = response.suggestions ?? [];
 
       setsuggestion(suggestions);
+      setloader(false);
 
     } catch (err) {
       console.error("Failed to fetch AI suggestions:", err);
+      setloader(false)
     }
   }
 
@@ -117,7 +123,7 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
       <div className='flex justify-between items-center mb-3'>
 
         <span className='font-semibold test-gray-800 text-sm' >Quick Replies</span>
-        <button onClick={getsuggestion} className='px-3 py-1  cursor-pointer text-xs flex items-center gap-1 bg-purple-100 text-purple-700 rounded-full shadow-sm border border-purple-200'> <Sparkle size={14} /> AI Suggest </button>
+        <button onClick={getsuggestion} className='px-3 py-1  cursor-pointer text-xs flex items-center gap-1 bg-purple-100 text-purple-700 rounded-full shadow-sm border border-purple-200'> <Sparkle size={14} /> {loader? <Loader  className='w-4 h-4 animate-spin'/> : 'AI Suggest'} </button>
       </div>
 
       <div className='flex gap-3 flex-wrap mb-3'>
