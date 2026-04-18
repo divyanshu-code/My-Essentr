@@ -1,5 +1,5 @@
 import { getSocket } from '@/Config/socket'
-import { AnimatePresence , motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, Sparkle } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 
@@ -10,11 +10,7 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
   const [fetchMessages, setfetchMessages] = useState([])
   const bottomRef = useRef(null)
 
-  const [suggestion , setsuggestion] = useState([
-    "Where are you?",
-    "Can you please update me on the delivery status?",
-    "Is there any delay in the delivery?"
-  ])
+  const [suggestion, setsuggestion] = useState([])
 
   useEffect(() => {
 
@@ -101,17 +97,14 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ message: fetchMessages[fetchMessages.length - 1]?.text || "" , role: fetchMessages[fetchMessages.length - 1]?.senderId === deliverboyId ? "delivery_boy" : "user" })
+        body: JSON.stringify({ message: fetchMessages[fetchMessages.length - 1]?.text || "", role: fetchMessages[fetchMessages.length - 1]?.senderId === deliverboyId ? "user" : "delivery_boy" })
       })
 
       const response = await result.json();
 
-      // const suggestions = response.data.candidates[0].content.parts[0].text.split(',').map(s => s.trim());
+      const suggestions = response.suggestions ?? [];
 
-      // setsuggestion(suggestions);
-
-      console.log(response.data);
-      
+      setsuggestion(suggestions);
 
     } catch (err) {
       console.error("Failed to fetch AI suggestions:", err);
@@ -124,7 +117,7 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
       <div className='flex justify-between items-center mb-3'>
 
         <span className='font-semibold test-gray-800 text-sm' >Quick Replies</span>
-        <button onClick={getsuggestion} className='px-3 py-1 text-xs flex items-center gap-1 bg-purple-100 text-purple-700 rounded-full shadow-sm border border-purple-200'> <Sparkle size={14}/> AI Suggest </button>
+        <button onClick={getsuggestion} className='px-3 py-1  cursor-pointer text-xs flex items-center gap-1 bg-purple-100 text-purple-700 rounded-full shadow-sm border border-purple-200'> <Sparkle size={14} /> AI Suggest </button>
       </div>
 
       <div className='flex gap-3 flex-wrap mb-3'>
@@ -157,7 +150,6 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
         <button className='rounded-full cursor-pointer bg-neutral-200 hover:bg-neutral-300  p-2.5'> <ArrowRight size={19} onClick={handleSendMessage} /> </button>
       </div>
     </div>
-
 
   )
 }

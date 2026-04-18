@@ -49,12 +49,7 @@ export async function POST(request) {
         const data = await response.json();
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-        console.log(reply);
-
         const suggestions = reply.split(',').map(s => s.trim());
-
-        console.log(suggestions);
-        
 
         return NextResponse.json({ suggestions } , { status: 200 });
     } catch (error) {
