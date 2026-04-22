@@ -10,15 +10,12 @@ import {
     ExternalLink,
     X,
     User2,
-    ShoppingCart
 } from 'lucide-react';
 import Livemapping from '@/Components/Livemapping';
 import { getSocket } from '@/Config/socket';
 import { useSelector } from 'react-redux';
 import Chatassistant from '@/Components/Chatassistant';;
-import { FcBusiness, FcBusinessman } from 'react-icons/fc';
 import { IoBusiness } from 'react-icons/io5';
-import { MdBusiness, MdBusinessCenter } from 'react-icons/md';
 
 const Activedashboard = ({ activeOrder, location }) => {
 
