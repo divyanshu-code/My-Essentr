@@ -90,6 +90,11 @@ const ManageOrders = () => {
     ) : [];
 
     console.log( "Filtered Orders: ", filteredOrders);
+
+     const assignedpartner = Array.isArray(orders) ? orders.filter(order =>
+        order?.assignedDeliverypartner) : [];
+
+    console.log( "Orders with Delivery Partners: ", assignedpartner[0]?._id);
     
     useEffect(() => {
 
@@ -326,15 +331,18 @@ const ManageOrders = () => {
                                                                 <div>
                                                                     <div className='flex items-center gap-2 mt-2'>
                                                                         <UserCheck size={15} />
-                                                                        <p className='text-white  text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
+                                                                        <p className='text-white w-24 text-[12px] font-bold'>{order.assignedDeliverypartner.name}</p>
                                                                     </div>
                                                                     <div className='flex items-center gap-2 mt-1 mb-2'>
                                                                         <PhoneCall size={14} />
                                                                         <p className='text-white text-[12px] font-bold '>{order.assignedDeliverypartner.mobile}</p>
                                                                     </div>
                                                                 </div>
-                                                                <div>
+                                                                <div className=' flex items-center gap-3 '>
                                                                     <a href={`tel:${order.assignedDeliverypartner.mobile}`} className='text-green-500 bg-green-500/10 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Call</a>
+
+                                                       <a href={`/vendor/trackorder/${assignedpartner[0]?._id}`} className='text-green-500 bg-green-500/10 text-[12px] px-3 py-1 rounded-lg border border-green-500/20 font-black tracking-widest'>Track</a>
+
                                                                 </div>
                                                             </div>
                                                         }

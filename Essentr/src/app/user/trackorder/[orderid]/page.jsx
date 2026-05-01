@@ -69,8 +69,6 @@ const page = ({ params }) => {
         visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20 } }
     };
 
-    const [riderLocation, setRiderLocation] = useState({ lat: 28.5355, lng: 77.3910 });
-
     const color = (status) => {
         if (status === "Pending") return "text-blue-500";
         if (status === "Out for delivery") return "text-orange-500";
