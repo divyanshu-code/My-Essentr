@@ -90,9 +90,13 @@ const Activedashboard = ({ activeOrder, location }) => {
                                     <h2 className="text-xl font-black text-slate-800">
                                         {step === 'pickup' ? 'Pickup from Vendor' : 'Deliver to Customer'}
                                     </h2>
-                                    <div className="text-slate-500 text-xs flex flex-col ">
+                                    <div className="text-slate-500 text-xs flex flex-col">
                                         <div className="flex items-center gap-1">
                                             <User2 size={12} /> {activeOrder?.currentOrderId?.vendor?.name}
+                                        </div>
+
+                                        <div className="flex items-center gap-1">
+                                            <Phone size={11} /> {activeOrder?.currentOrderId?.vendor?.userId?.mobile}
                                         </div>
 
                                         <div className="flex items-center gap-1">

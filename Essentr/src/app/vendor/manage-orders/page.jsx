@@ -89,6 +89,8 @@ const ManageOrders = () => {
         order?._id?.toString()?.toLowerCase().includes(searchTerm.toLowerCase())
     ) : [];
 
+    console.log( "Filtered Orders: ", filteredOrders);
+    
     useEffect(() => {
 
         const getvendororders = async () => {
@@ -262,7 +264,7 @@ const ManageOrders = () => {
                                                         </div>
                                                         <div className='text-blue-400 text-[10px] leading-tight font-bold uppercase'>
                                                             <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Needchange: ${order?.change.customerGiveamt}` : null}</p>
-                                                            <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change.deliveryReturnamt}` : null}</p>
+                                                            <p className='text-white'>{order?.paymentMethod === 'cod' && order?.changeOption === 'needChange' ? `Returnamount: ${order?.change?.deliveryReturnamt}` : null}</p>
                                                             <p>{order?.paymentMethod === 'cod' ? "cod" : 'online'}</p>
                                                         </div>
                                                     </td>
@@ -276,7 +278,7 @@ const ManageOrders = () => {
                                                         <div className="text-emerald-400 font-black">
                                                             ₹{order?.vendorPayable ? order.vendorPayable.toFixed(2) : (order?.totalamount || 0)}
                                                         </div>
-                                                        {(order?.change.deliveryReturnamt + order?.vendorPayable) != order?.change.customerGiveamt ? <p className="text-[8px] font-medium leading-tight text-zinc-500 uppercase">Incl. Split Delivery Fees</p> : <p className="text-[8px] font-medium leading-tight text-zinc-500 uppercase">Incl. Delivery Fees</p>}
+                                                        {(order?.change?.deliveryReturnamt + order?.vendorPayable) != order?.change?.customerGiveamt ? <p className="text-[8px] font-medium leading-tight text-zinc-500 uppercase">Incl. Split Delivery Fees</p> : <p className="text-[8px] font-medium leading-tight text-zinc-500 uppercase">Incl. Delivery Fees</p>}
                                                     </td>
 
                                                     <td className="px-1 py-5">
