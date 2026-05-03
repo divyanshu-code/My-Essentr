@@ -45,8 +45,6 @@ const Livemapping = ({ deliverylocation, location }) => {
     const [position, setPosition] = useState(null);
     const [error, setError] = useState(null);
 
-    console.log("kkkkkkk", deliverylocation, location);
-
     useEffect(() => {
         const loadLeaflet = async () => {
 

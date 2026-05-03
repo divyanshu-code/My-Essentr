@@ -1,26 +1,31 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     Bike,
-    Store,
     Phone,
     MessageSquare,
     Clock,
-    MapPin,
     ChevronLeft,
     CheckCircle,
-    AlertCircle,
-    Package
+    Package,
+    ChevronDown
 } from 'lucide-react';
 import Livemapping from '@/Components/Livemapping';
 import { useParams } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import Link from 'next/link';
+import { getSocket } from '@/Config/socket';
 
-const VendorTracker = ({ activeOrder, riderLocation }) => {
+const VendorTracker = () => {
 
     const { assignedpartner } = useParams()
     const [orderStatus, setOrderStatus] = useState('preparing');
+    const [order, setorder] = useState();
+    const [deliverypartnerlocation, setdeliverypartnerlocation] = useState({});
+    const [expanded, setexpanded] = useState(false)
+
     const [eta, setEta] = useState(5);
 
     const cardVariants = {
@@ -28,23 +33,85 @@ const VendorTracker = ({ activeOrder, riderLocation }) => {
         visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } }
     };
 
-    return (
-        <div className="relative h-screen w-full bg-slate-100 overflow-hidden flex flex-col">
+    const userdata = useSelector((state) => state.user.userData);
 
-            <div className="absolute top-0 left-0 right-0 z-20 p-6 flex justify-between items-center bg-gradient-to-b from-black/20 to-transparent">
-                <button className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg text-slate-800">
+    const vendorlocation = {
+        latitude: userdata?.location?.coordinates[1],
+        longitude: userdata?.location?.coordinates[0]
+    };
+
+    useEffect(() => {
+
+        const getorder = async () => {
+            try {
+
+                const res = await fetch(`/api/auth/get-track-order/${assignedpartner}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+                const data = await res.json();
+
+                console.log("order", data);
+
+                setorder(data);
+
+                setdeliverypartnerlocation({
+                    latitude: data?.assignedDeliverypartner?.location?.coordinates[1],
+                    longitude: data?.assignedDeliverypartner?.location?.coordinates[0]
+                })
+
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        getorder();
+    }, [userdata?._id])
+
+    useEffect(() => {
+
+        const socket = getSocket();
+
+        if (order?._id) {
+            socket.emit("joinOrderRoom", order._id);
+        }
+
+        socket?.on("update-delivery-location", (data) => {
+
+            if (data.userId === order?.assignedDeliverypartner?._id) {
+                setdeliverylocation({
+                    latitude: data.location.coordinates?.[1],
+                    longitude: data.location.coordinates?.[0]
+                });
+            }
+
+        })
+
+        return () => {
+            socket.off("update-delivery-location");
+        }
+
+    }, [order])
+
+    return (
+        <div className="relative h-screen w-full bg-slate-100  flex flex-col">
+
+            <div className="absolute z-1000 p-6 flex justify-between items-center w-full">
+                <Link href="/vendor/manage-orders" className="p-3 bg-white rounded-2xl shadow-lg text-slate-800">
                     <ChevronLeft size={24} />
-                </button>
-                <div className="bg-white/90 backdrop-blur-md px-5 py-2 rounded-2xl shadow-lg border border-white/50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Order ID</p>
+                </Link>
+                <div className="bg-white backdrop-blur-md px-5 py-2 rounded-2xl shadow-lg border border-white/50">
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Order ID</p>
                     <p className="text-sm font-black text-slate-800">#{assignedpartner?.slice(-6)}</p>
                 </div>
             </div>
 
             <div className="flex-1 relative">
                 <Livemapping
-                    deliverylocation={riderLocation}
-                    location={activeOrder?.vendorLocation}
+                    deliverylocation={deliverypartnerlocation}
+                    location={vendorlocation}
                     type="vendor_view"
                 />
 
@@ -72,14 +139,14 @@ const VendorTracker = ({ activeOrder, riderLocation }) => {
                 className="bg-white rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] relative z-30 p-8"
             >
                 <div className="max-w-2xl mx-auto">
-                    {/* Rider Info Card */}
+
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-xl font-black shadow-lg">
-                                {activeOrder?.riderName?.charAt(0) || 'R'}
+                                {order?.assignedDeliverypartner?.name?.charAt(0) || 'R'}
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-800">{activeOrder?.riderName || 'Rahul Sharma'}</h3>
+                                <h3 className="text-lg font-black text-slate-800">{order?.assignedDeliverypartner?.name}</h3>
                                 <div className="flex items-center gap-2 text-green-500">
                                     <span className="relative flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -91,38 +158,52 @@ const VendorTracker = ({ activeOrder, riderLocation }) => {
                         </div>
 
                         <div className="flex gap-2">
-                            <button className="p-4 bg-slate-100 rounded-2xl text-slate-600 hover:bg-slate-200 transition-colors">
+                            <button className="p-4 bg-slate-100 rounded-2xl cursor-pointer text-slate-600 hover:bg-slate-200 transition-colors">
                                 <MessageSquare size={20} />
                             </button>
-                            <button className="p-4 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-100 transition-colors">
+                            <a href={`tel:${order?.assignedDeliverypartner?.mobile}`} className="p-4 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-100 transition-colors">
                                 <Phone size={20} />
-                            </button>
+                            </a>
+
                         </div>
                     </div>
 
-                    {/* Handover Progress / Items */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-100">
                             <div className="flex items-center gap-2 mb-1">
                                 <Package size={14} className="text-slate-400" />
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Order Items</p>
+                                <div className='flex items-center justify-between w-full' onClick={() => setexpanded(!expanded)}>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Order Items</p>
+                                    <ChevronDown size={16} className=" text-slate-500 cursor-pointer" />
+                                </div>
                             </div>
-                            <p className="text-sm font-bold text-slate-700">12 Items • ₹1,450</p>
+                            <p className="text-sm font-bold text-slate-700">{order?.items?.length || 0} Items • ₹{order?.totalamount?.toFixed(2) || '0.00'}</p>
+
+                            {expanded && (
+                                <div className="mt-3 max-h-40 overflow-y-auto">
+                                    {order?.items?.map((item, index) => (
+                                        <div key={index} className="flex items-center justify-between py-2 border-b border-slate-200">
+                                            <p className="text-xs font-bold text-slate-500">{item.name} x {item.quantity}</p>
+                                            <p className="text-xs font-bold text-slate-500">₹{item.price?.toFixed(2) || '0.00'}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-100">
                             <div className="flex items-center gap-2 mb-1">
                                 <Clock size={14} className="text-slate-400" />
                                 <p className="text-[10px] font-bold text-slate-400 uppercase">Prep Time</p>
                             </div>
-                            <p className="text-sm font-bold text-slate-700">Ready in 2 mins</p>
+                            <p className="text-sm font-bold text-slate-700">Ready in 5 mins</p>
                         </div>
                     </div>
 
-                    {/* VENDOR ACTION BUTTON */}
                     <button
-                        className={`w-full py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl transition-all active:scale-95 ${orderStatus === 'preparing'
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-green-500 text-white'
+                        className={`w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 shadow-xl transition-all active:scale-95 ${orderStatus === 'preparing'
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-green-500 text-white'
                             }`}
                         onClick={() => setOrderStatus('ready')}
                     >
