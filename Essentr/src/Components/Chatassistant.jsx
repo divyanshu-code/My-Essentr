@@ -40,7 +40,6 @@ const Chatassistant = ({ orderId, deliverboyId }) => {
 
       } catch (err) {
         console.error("Failed to fetch messages:", err);
-        
       }
     }
 

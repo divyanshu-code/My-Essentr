@@ -49,6 +49,11 @@ const masterOrderSchema = new mongoose.Schema({
     isPaid: { 
         type: Boolean, 
         default: false 
+    },
+    orderstatus:{
+        type: String,
+        enum: ["ready", "picked", "delivered"],
+        default: "ready"
     }
 }, { timestamps: true });
 

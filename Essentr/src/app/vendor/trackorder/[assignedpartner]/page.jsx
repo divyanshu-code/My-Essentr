@@ -21,6 +21,7 @@ import { getSocket } from '@/Config/socket';
 const VendorTracker = () => {
 
     const { assignedpartner } = useParams()
+
     const [orderStatus, setOrderStatus] = useState('preparing');
     const [order, setorder] = useState();
     const [deliverypartnerlocation, setdeliverypartnerlocation] = useState({});
@@ -95,6 +96,26 @@ const VendorTracker = () => {
 
     }, [order])
 
+    const changeorderstatus = async () => {
+
+        try {
+
+            const res = await fetch('/api/admin/changestatus', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ parentorder: order.parentOrder })
+            })
+
+            const data = await res.json();
+            console.log(data);
+
+        } catch (err) {
+            console.log(err);
+        }
+    }   
+
     return (
         <div className="relative h-screen w-full bg-slate-100  flex flex-col">
 
@@ -102,7 +123,7 @@ const VendorTracker = () => {
                 <Link href="/vendor/manage-orders" className="p-3 bg-white rounded-2xl shadow-lg text-slate-800">
                     <ChevronLeft size={24} />
                 </Link>
-                <div className="bg-white backdrop-blur-md px-5 py-2 rounded-2xl shadow-lg border border-white/50">
+                <div className="bg-white backdrop-blur-md px-5 py-2 rounded-xl shadow-lg border border-white/50">
                     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Order ID</p>
                     <p className="text-sm font-black text-slate-800">#{assignedpartner?.slice(-6)}</p>
                 </div>
@@ -139,7 +160,6 @@ const VendorTracker = () => {
                 className="bg-white rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] relative z-30 p-8"
             >
                 <div className="max-w-2xl mx-auto">
-
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-xl font-black shadow-lg">
@@ -158,13 +178,9 @@ const VendorTracker = () => {
                         </div>
 
                         <div className="flex gap-2">
-                            <button className="p-4 bg-slate-100 rounded-2xl cursor-pointer text-slate-600 hover:bg-slate-200 transition-colors">
-                                <MessageSquare size={20} />
-                            </button>
                             <a href={`tel:${order?.assignedDeliverypartner?.mobile}`} className="p-4 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-100 transition-colors">
                                 <Phone size={20} />
                             </a>
-
                         </div>
                     </div>
 
@@ -205,7 +221,10 @@ const VendorTracker = () => {
                             ? 'bg-orange-500 text-white'
                             : 'bg-green-500 text-white'
                             }`}
-                        onClick={() => setOrderStatus('ready')}
+                        onClick={() => {
+                            setOrderStatus('ready'); 
+                            changeorderstatus();
+                        }}
                     >
                         {orderStatus === 'preparing' ? (
                             <>Mark as Ready for Pickup <CheckCircle size={24} /></>
