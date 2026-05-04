@@ -52,8 +52,8 @@ const masterOrderSchema = new mongoose.Schema({
     },
     orderstatus:{
         type: String,
-        enum: ["ready", "picked", "delivered"],
-        default: "ready"
+        enum: [ "preparing" ,"ready", "picked", "delivered"],
+        default: "preparing"
     }
 }, { timestamps: true });
 

@@ -82,7 +82,7 @@ const VendorTracker = () => {
         socket?.on("update-delivery-location", (data) => {
 
             if (data.userId === order?.assignedDeliverypartner?._id) {
-                setdeliverylocation({
+                setdeliverypartnerlocation({
                     latitude: data.location.coordinates?.[1],
                     longitude: data.location.coordinates?.[0]
                 });
@@ -109,12 +109,41 @@ const VendorTracker = () => {
             })
 
             const data = await res.json();
-            console.log(data);
+            setOrderStatus(data?.order?.orderstatus);
 
         } catch (err) {
             console.log(err);
         }
-    }   
+    }
+
+    useEffect(() => {
+
+        if (!order?.parentOrder) return;
+
+        const getdata = async () => {
+
+            try {
+
+                const res = await fetch('/api/admin/getstatus', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ parentorder: order.parentOrder })
+                })
+
+                const data = await res.json();
+
+                setOrderStatus(data?.order?.orderstatus);
+
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        getdata();
+
+    }, [order])
 
     return (
         <div className="relative h-screen w-full bg-slate-100  flex flex-col">
@@ -217,12 +246,11 @@ const VendorTracker = () => {
                     </div>
 
                     <button
-                        className={`w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 shadow-xl transition-all active:scale-95 ${orderStatus === 'preparing'
+                        className={`w-full py-3 rounded-xl font-black lg:text-lg text-sm flex cursor-pointer items-center justify-center gap-3 shadow-xl transition-all active:scale-95 ${orderStatus === 'preparing'
                             ? 'bg-orange-500 text-white'
                             : 'bg-green-500 text-white'
                             }`}
                         onClick={() => {
-                            setOrderStatus('ready'); 
                             changeorderstatus();
                         }}
                     >
@@ -233,7 +261,7 @@ const VendorTracker = () => {
                         )}
                     </button>
 
-                    <p className="text-center text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-widest">
+                    <p className="text-center text-[8px]  text-slate-400 font-bold mt-2 uppercase tracking-widest">
                         Please keep the package at the designated pickup counter
                     </p>
                 </div>
