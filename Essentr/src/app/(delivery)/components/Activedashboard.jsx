@@ -10,6 +10,7 @@ import {
     ExternalLink,
     X,
     User2,
+    ChevronDown,
 } from 'lucide-react';
 import Livemapping from '@/Components/Livemapping';
 import { getSocket } from '@/Config/socket';
@@ -21,8 +22,9 @@ const Activedashboard = ({ activeOrder, location }) => {
 
     const [step, setStep] = useState('pickup');
     const [extend, setextend] = useState(false);
+    const [showorder, setshoworder] = useState(false);
 
-    console.log(activeOrder)
+    console.log("Active Order:", activeOrder);
 
     const sheetVariants = {
         collapsed: { y: 0 },
@@ -68,8 +70,7 @@ const Activedashboard = ({ activeOrder, location }) => {
 
     return (
         <>
-
-            <div className="relative h-screen w-full overflow-hidden bg-slate-200">
+            <div className="relative h-screen w-full  bg-slate-200">
 
                 <div className={`flex flex-col h-full transition-all duration-500 ${extend ? 'scale-100 ' : 'scale-100 blur-0'}`}>
 
@@ -100,7 +101,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                         </div>
 
                                         <div className="flex items-center gap-1">
-                                            <IoBusiness size={12}/> {activeOrder?.currentOrderId?.vendor?.businessName}
+                                            <IoBusiness size={12} /> {activeOrder?.currentOrderId?.vendor?.businessName}
                                         </div>
 
                                         <div className="flex items-center gap-1">
@@ -116,15 +117,57 @@ const Activedashboard = ({ activeOrder, location }) => {
                             </div>
 
                             <div className="space-y-6">
-                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                <div className="w-full rounded-2xl  border-slate-200 bg-slate-100 p-4">
                                     <div className="flex items-center gap-3">
-                                        <PackageCheck className="text-orange-500" />
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400">ORDER ITEMS</p>
-                                            <p className="text-xs font-bold text-slate-700">Milk, Eggs, Bread + 2 more</p>
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100">
+                                            <PackageCheck className="text-orange-600" size={20} />
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                                    Order Items
+                                                </p>
+                                                <button
+                                                    onClick={() => setshoworder(!showorder)}
+                                                    className="rounded-full p-1 transition-colors hover:bg-slate-200 text-slate-400 cursor-pointer"
+                                                >
+                                                    {showorder ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                </button>
+                                            </div>
+
+                                            <p className="text-sm font-bold text-slate-800">
+                                                {activeOrder?.currentOrderId?.items?.length || 0} Items •
+                                                <span className="ml-1 text-orange-600">
+                                                    ₹{activeOrder?.currentOrderId?.totalamount?.toFixed(2) || '0.00'}
+                                                </span>
+                                            </p>
                                         </div>
                                     </div>
-                                    <button className="text-slate-400"><ExternalLink size={16} /></button>
+
+                                    {showorder && (
+                                        <div className="mt-4 w-full border-t border-slate-200 pt-2">
+                                            <div className="max-h-60 overflow-y-auto pr-1">
+                                                {activeOrder?.currentOrderId?.items?.map((item, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex w-full items-center justify-between border-b border-slate-100 py-2 last:border-0"
+                                                    >
+                                                        <p className="text-xs font-semibold text-slate-600">
+                                                            {item.name} <span className="ml-1 text-slate-400">x{item.quantity}</span>
+                                                        </p>
+                                                        <p className="text-xs font-bold text-slate-700">
+                                                            ₹{item.price?.toFixed(2) || '0.00'}
+                                                        </p>
+
+                                                    </div>
+                                                ))}
+                                                    <div className=' w-full text-xs font-semibold text-slate-600 border-b border-slate-200 '>
+                                                         <p>Delivery Fees:  <span className='text-xs font-bold right-0 text-slate-700'>₹50</span></p>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="relative group">
@@ -148,7 +191,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                     </div>
                                 </div>
 
-                                <p className="text-center text-[10px] text-slate-300 font-medium">
+                                <p className="text-center text-[12px] text-slate-400 font-medium">
                                     Verify items with vendor before sliding
                                 </p>
                             </div>

@@ -10,7 +10,8 @@ import {
     ChevronLeft,
     CheckCircle,
     Package,
-    ChevronDown
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 import Livemapping from '@/Components/Livemapping';
 import { useParams } from 'next/navigation';
@@ -219,13 +220,13 @@ const VendorTracker = () => {
                                 <Package size={14} className="text-slate-400" />
                                 <div className='flex items-center justify-between w-full' onClick={() => setexpanded(!expanded)}>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase">Order Items</p>
-                                    <ChevronDown size={16} className=" text-slate-500 cursor-pointer" />
+                                  { expanded ? <ChevronUp size={16} className="text-slate-500 cursor-pointer" /> : <ChevronDown size={16} className="text-slate-500 cursor-pointer" /> }
                                 </div>
                             </div>
                             <p className="text-sm font-bold text-slate-700">{order?.items?.length || 0} Items • ₹{order?.totalamount?.toFixed(2) || '0.00'}</p>
 
                             {expanded && (
-                                <div className="mt-3 max-h-40 overflow-y-auto">
+                                <div className="mt-1 max-h-40 overflow-y-auto">
                                     {order?.items?.map((item, index) => (
                                         <div key={index} className="flex items-center justify-between py-2 border-b border-slate-200">
                                             <p className="text-xs font-bold text-slate-500">{item.name} x {item.quantity}</p>
