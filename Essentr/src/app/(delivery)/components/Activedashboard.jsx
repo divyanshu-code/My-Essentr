@@ -26,6 +26,13 @@ const Activedashboard = ({ activeOrder, location }) => {
 
     console.log("Active Order:", activeOrder);
 
+    let sumtotal = 0 ;
+    const getordertotal = activeOrder?.currentOrderId?.items?.map((item)=>{
+           sumtotal = sumtotal + (item?.quantity)*(item?.price || 0);
+    })
+
+    console.log("Active Order with Price:", sumtotal);
+
     const sheetVariants = {
         collapsed: { y: 0 },
         expanded: { y: -250 }
@@ -78,7 +85,6 @@ const Activedashboard = ({ activeOrder, location }) => {
 
                     <m.div
                         variants={sheetVariants}
-
                         transition={{ type: "spring", damping: 20 }}
                         className="bg-white rounded h-80 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20"
                     >
@@ -146,25 +152,40 @@ const Activedashboard = ({ activeOrder, location }) => {
                                     </div>
 
                                     {showorder && (
-                                        <div className="mt-4 w-full border-t border-slate-200 pt-2">
+                                        <div className="mt-4 w-full ">
                                             <div className="max-h-60 overflow-y-auto pr-1">
                                                 {activeOrder?.currentOrderId?.items?.map((item, index) => (
                                                     <div
                                                         key={index}
-                                                        className="flex w-full items-center justify-between border-b border-slate-100 py-2 last:border-0"
+                                                        className="flex w-full items-center justify-between border-b border-slate-100 py-1 last:border-0"
                                                     >
+                                                        <div className='flex items-center gap-10'>
+
                                                         <p className="text-xs font-semibold text-slate-600">
-                                                            {item.name} <span className="ml-1 text-slate-400">x{item.quantity}</span>
+                                                            {item.name} <span className="ml-1 text-slate-400">x {item.quantity}</span>
                                                         </p>
+                                                        <p className='text-xs font-semibold text-slate-600'>
+                                                                ₹{item.price?.toFixed(2) || '0.00'} each
+                                                        </p>
+                                                        </div>
                                                         <p className="text-xs font-bold text-slate-700">
-                                                            ₹{item.price?.toFixed(2) || '0.00'}
+                                                            ₹{((item.price?.toFixed(2)) * (item?.quantity || 0)).toFixed(2) || '0.00'}
                                                         </p>
 
                                                     </div>
                                                 ))}
-                                                    <div className=' w-full text-xs font-semibold text-slate-600 border-b border-slate-200 '>
-                                                         <p>Delivery Fees:  <span className='text-xs font-bold right-0 text-slate-700'>₹50</span></p>
-                                                    </div>
+
+                                                <div className="flex w-full items-center justify-between py-2 border-t border-slate-200">
+                                                    <p className="text-xs font-semibold text-slate-600">Delivery Fees</p>
+                                                  <p className="text-xs font-bold text-slate-700"> {sumtotal < 150 ? '₹50.00' : 'Free'}</p>
+                                                </div>
+
+                                                <div className="flex w-full items-center justify-between py-2 border-t border-slate-200">
+                                                    <p className="text-xs font-bold text-slate-800 uppercase">Total Amount</p>
+                                                    <p className="text-xs font-bold text-orange-600">
+                                                        ₹{activeOrder?.currentOrderId?.totalamount?.toFixed(2) || '0.00'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
