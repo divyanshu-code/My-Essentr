@@ -31,8 +31,6 @@ const Activedashboard = ({ activeOrder, location }) => {
            sumtotal = sumtotal + (item?.quantity)*(item?.price || 0);
     })
 
-    console.log("Active Order with Price:", sumtotal);
-
     const sheetVariants = {
         collapsed: { y: 0 },
         expanded: { y: -250 }
