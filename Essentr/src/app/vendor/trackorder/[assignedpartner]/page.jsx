@@ -25,7 +25,7 @@ const VendorTracker = () => {
 
     const [orderStatus, setOrderStatus] = useState('preparing');
     const [order, setorder] = useState();
-    const [deliverypartnerlocation, setdeliverypartnerlocation] = useState({});
+    const [deliverypartnerlocation, setdeliverypartnerlocation] = useState({ lattitude: 0, longitude: 0 });
     const [expanded, setexpanded] = useState(false)
 
     const [eta, setEta] = useState(5);
@@ -230,7 +230,7 @@ const VendorTracker = () => {
                                     {order?.items?.map((item, index) => (
                                         <div key={index} className="flex items-center justify-between py-2 border-b border-slate-200">
                                             <p className="text-xs font-bold text-slate-500">{item.name} x {item.quantity}</p>
-                                            <p className="text-xs font-bold text-slate-500">₹{item.price?.toFixed(2) || '0.00'}</p>
+                                            <p className="text-xs font-bold text-slate-500">₹{(item.price?.toFixed(2))* (item.quantity) || '0.00'}</p>
                                         </div>
                                     ))}
                                 </div>

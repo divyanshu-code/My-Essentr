@@ -7,7 +7,6 @@ import {
     MapPin,
     ChevronUp,
     PackageCheck,
-    ExternalLink,
     X,
     User2,
     ChevronDown,
@@ -18,17 +17,34 @@ import { useSelector } from 'react-redux';
 import Chatassistant from '@/Components/Chatassistant';;
 import { IoBusiness } from 'react-icons/io5';
 
+async function markOrderAsPicked(orderId) {
+    const res = await fetch(`/api/admin/picked-status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "picked" , orderId }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message ?? "Failed to update order status");
+    return data;
+}
+
 const Activedashboard = ({ activeOrder, location }) => {
 
-    const [step, setStep] = useState('pickup');
     const [extend, setextend] = useState(false);
     const [showorder, setshoworder] = useState(false);
 
+    const orderId = activeOrder?.masterOrderId?._id;
+    const currentStatus = activeOrder?.masterOrderId?.orderstatus;
+
+    const [isPicked, setIsPicked] = useState(currentStatus === "picked");
+    const [loading, setLoading] = useState(false);
+
     console.log("Active Order:", activeOrder);
 
-    let sumtotal = 0 ;
-    const getordertotal = activeOrder?.currentOrderId?.items?.map((item)=>{
-           sumtotal = sumtotal + (item?.quantity)*(item?.price || 0);
+    let sumtotal = 0;
+    const getordertotal = activeOrder?.currentOrderId?.items?.map((item) => {
+        sumtotal = sumtotal + (item?.quantity) * (item?.price || 0);
     })
 
     const sheetVariants = {
@@ -73,6 +89,24 @@ const Activedashboard = ({ activeOrder, location }) => {
         return () => navigator.geolocation.clearWatch(watchId);
     }, [data?._id]);
 
+    const handleDragEnd = async (e, info) => {
+
+        if (info.point.x <= 200) return;
+        if (loading || isPicked) return;
+
+        setLoading(true);
+
+        try {
+            await markOrderAsPicked(orderId);
+            setIsPicked(true);
+        } catch (err) {
+            console.error("[PickupSlider]", err);
+        } finally {
+            setLoading(false);
+        }
+
+    }
+
     return (
         <>
             <div className="relative h-screen w-full  bg-slate-200">
@@ -93,7 +127,7 @@ const Activedashboard = ({ activeOrder, location }) => {
                                 <div>
                                     <h2 className='text-xs font-black text-slate-400'>Order: #{activeOrder?.currentOrderId?._id.toString()?.slice(-6)}</h2>
                                     <h2 className="text-xl font-black text-slate-800">
-                                        {step === 'pickup' ? 'Pickup from Vendor' : 'Deliver to Customer'}
+                                        {currentStatus === 'picked' ? 'Deliver to Customer' : 'Pickup from Vendor'}
                                     </h2>
                                     <div className="text-slate-500 text-xs flex flex-col">
                                         <div className="flex items-center gap-1">
@@ -159,12 +193,12 @@ const Activedashboard = ({ activeOrder, location }) => {
                                                     >
                                                         <div className='flex items-center gap-10'>
 
-                                                        <p className="text-xs font-semibold text-slate-600">
-                                                            {item.name} <span className="ml-1 text-slate-400">x {item.quantity}</span>
-                                                        </p>
-                                                        <p className='text-xs font-semibold text-slate-600'>
+                                                            <p className="text-xs font-semibold text-slate-600">
+                                                                {item.name} <span className="ml-1 text-slate-400">x {item.quantity}</span>
+                                                            </p>
+                                                            <p className='text-xs font-semibold text-slate-600'>
                                                                 ₹{item.price?.toFixed(2) || '0.00'} each
-                                                        </p>
+                                                            </p>
                                                         </div>
                                                         <p className="text-xs font-bold text-slate-700">
                                                             ₹{((item.price?.toFixed(2)) * (item?.quantity || 0)).toFixed(2) || '0.00'}
@@ -175,7 +209,7 @@ const Activedashboard = ({ activeOrder, location }) => {
 
                                                 <div className="flex w-full items-center justify-between py-2 border-t border-slate-200">
                                                     <p className="text-xs font-semibold text-slate-600">Delivery Fees</p>
-                                                  <p className="text-xs font-bold text-slate-700"> {sumtotal < 150 ? '₹50.00' : 'Free'}</p>
+                                                    <p className="text-xs font-bold text-slate-700"> {sumtotal < 150 ? '₹50.00' : 'Free'}</p>
                                                 </div>
 
                                                 <div className="flex w-full items-center justify-between py-2 border-t border-slate-200">
@@ -193,19 +227,20 @@ const Activedashboard = ({ activeOrder, location }) => {
                                     <m.div
                                         drag="x"
                                         dragConstraints={{ left: 0, right: 250 }}
-                                        onDragEnd={(e, info) => {
-                                            if (info.point.x > 200) {
-                                                if (step === 'pickup') setStep('delivery');
-                                                else onComplete();
-                                            }
-                                        }}
-                                        className="w-20 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-white cursor-grab active:cursor-grabbing z-10 relative shadow-xl"
+                                        dragListener={!loading && !isPicked}
+                                        onDragEnd={handleDragEnd}
+                                        className={` w-20 h-15 bg-slate-900 rounded-2xl flex items-center justify-center text-white z-10 relative shadow-xl ${loading || isPicked
+                                            ? "cursor-not-allowed opacity-60"
+                                            : "cursor-grab active:cursor-grabbing"}`}
                                     >
-                                        <ChevronUp size={24} className="rotate-90" />
+                                        {loading
+                                            ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            : <ChevronUp size={24} className="rotate-90" />
+                                        }
                                     </m.div>
-                                    <div className="absolute inset-0 bg-slate-100 rounded-2xl flex items-center justify-center">
+                                    <div className="absolute inset-0 bg-slate-100 rounded-2xl flex items-center justify-center -z-0">
                                         <p className="text-xs font-black text-slate-400 tracking-widest uppercase">
-                                            {step === 'pickup' ? 'Slide to Confirm Pickup' : 'Slide to Complete'}
+                                            {isPicked ? "✓ Picked Up" : "Slide to Confirm Pickup"}
                                         </p>
                                     </div>
                                 </div>
