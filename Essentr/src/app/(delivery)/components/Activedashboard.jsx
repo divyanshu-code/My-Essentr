@@ -21,7 +21,7 @@ async function markOrderAsPicked(orderId) {
     const res = await fetch(`/api/admin/picked-status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "picked" , orderId }),
+        body: JSON.stringify({ status: "picked", orderId }),
     });
 
     const data = await res.json();
@@ -35,7 +35,9 @@ const Activedashboard = ({ activeOrder, location }) => {
     const [showorder, setshoworder] = useState(false);
 
     const orderId = activeOrder?.masterOrderId?._id;
-    const currentStatus = activeOrder?.masterOrderId?.orderstatus;
+    const [currentStatus, setCurrentStatus] = useState(
+        activeOrder?.masterOrderId?.orderstatus  
+    );
 
     const [isPicked, setIsPicked] = useState(currentStatus === "picked");
     const [loading, setLoading] = useState(false);
@@ -98,9 +100,11 @@ const Activedashboard = ({ activeOrder, location }) => {
 
         try {
             await markOrderAsPicked(orderId);
+            setCurrentStatus("picked");
             setIsPicked(true);
         } catch (err) {
             console.error("[PickupSlider]", err);
+            setCurrentStatus("ready");
         } finally {
             setLoading(false);
         }
@@ -227,11 +231,10 @@ const Activedashboard = ({ activeOrder, location }) => {
                                     <m.div
                                         drag="x"
                                         dragConstraints={{ left: 0, right: 250 }}
-                                        dragListener={!loading && !isPicked}
+                                        
                                         onDragEnd={handleDragEnd}
-                                        className={` w-20 h-15 bg-slate-900 rounded-2xl flex items-center justify-center text-white z-10 relative shadow-xl ${loading || isPicked
-                                            ? "cursor-not-allowed opacity-60"
-                                            : "cursor-grab active:cursor-grabbing"}`}
+                                        className={` w-20 h-15 bg-slate-900 rounded-2xl flex items-center justify-center text-white z-10 relative shadow-xl
+                                             "cursor-grab active:cursor-grabbing" `}
                                     >
                                         {loading
                                             ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
